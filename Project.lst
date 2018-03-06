@@ -1,12 +1,15 @@
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    01/05/18 15:06:00
-#Program Template     (template.asm			     Page 1 - 1
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/05/18 20:32:12
+Program 6      (program6.asm				     Page 1 - 1
 
 
-				TITLE Program Template     (template.asm)
+				TITLE Program 6      (program6.asm)
 
-				; Author:
-				; Course / Project ID                 Date:
-				; Description:
+				; Author: Matthew Anderson			anderma8@oregonstate.edu
+				; Course: CS 271 - Program 6        Date: March 5, 2018
+				; Description: Presents the user with an nCr combinatorics problem,
+				;  and evaluates the entered answer. 'n' will be a random number in [3, 12],
+				;  and 'r' will be a random number in [1, n]. Repeats until user decides to
+				;  exit. Demonstrates recursive implementation of calculating nCr.
 
 				INCLUDE Irvine32.inc
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
@@ -27,29 +30,143 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    01/05/18 15:06:00
 			      C .LIST
 			      C 
 
-				; (insert constant definitions here)
+ = 00000003			N_MIN = 3
+ = 0000000C			N_MAX = 12
+ = 00000001			R_MIN = 1				;R_MAX depends on user input.
+
+				;--------------------------------------------------
+				mWriteStr MACRO buffer				
+				;
+				; This macro prints a string. Accepts location
+				; of the string buffer.
+				;
+				; Implementation borrowed from Week 9 class 
+				;  lectures.
+				;--------------------------------------------------
+					push	edx
+					mov		edx, OFFSET buffer
+					call	WriteString
+					pop		edx
+
+				ENDM
+				;--------------------------------------------------
+
 
  00000000			.data
+ 00000000 43 6F 6D 62 69	programName		BYTE	"Combinatorics Quiz",0
+	   6E 61 74 6F 72
+	   69 63 73 20 51
+	   75 69 7A 00
+ 00000013 57 72 69 74 74	myName			BYTE	"Written By: Matthew Anderson",0
+	   65 6E 20 42 79
+	   3A 20 4D 61 74
+	   74 68 65 77 20
+	   41 6E 64 65 72
+	   73 6F 6E 00
+ 00000030 49 20 77 69 6C	instruct1		BYTE	"I will ask you to calculate the number of possible",0
+	   6C 20 61 73 6B
+	   20 79 6F 75 20
+	   74 6F 20 63 61
+	   6C 63 75 6C 61
+	   74 65 20 74 68
+	   65 20 6E 75 6D
+	   62 65 72 20 6F
+	   66 20 70 6F 73
+	   73 69 62 6C 65
+	   00
+ 00000063 63 6F 6D 62 69	instruct2		BYTE	"combinations of r items taken from a set of n items (nCr),",0
+	   6E 61 74 69 6F
+	   6E 73 20 6F 66
+	   20 72 20 69 74
+	   65 6D 73 20 74
+	   61 6B 65 6E 20
+	   66 72 6F 6D 20
+	   61 20 73 65 74
+	   20 6F 66 20 6E
+	   20 69 74 65 6D
+	   73 20 28 6E 43
+	   72 29 2C 00
+ 0000009E 61 6E 64 20 65	instruct3		BYTE	"and evaluate your answer.",0
+	   76 61 6C 75 61
+	   74 65 20 79 6F
+	   75 72 20 61 6E
+	   73 77 65 72 2E
+	   00
 
 				; (insert variable definitions here)
 
  00000000			.code
  00000000			main PROC
 
+ 00000000  E8 00000000 E		call	Randomize			;Seed random number generator.
+ 00000005  E8 00000007			call	Introduction
+
+
+
 				; (insert executable instructions here)
 
 					exit	; exit to operating system
- 00000000  6A 00	   *	    push   +000000000h
- 00000002  E8 00000000 E   *	    call   ExitProcess
- 00000007			main ENDP
+ 0000000A  6A 00	   *	    push   +000000000h
+ 0000000C  E8 00000000 E   *	    call   ExitProcess
+ 00000011			main ENDP
 
 				; (insert additional procedures here)
 
+				;--------------------------------------------------
+ 00000011			Introduction PROC
+				;
+				; Prints a greeting message and program
+				; instructions.
+				;
+				;--------------------------------------------------
+					mWriteStr	programName
+ 00000011  52		     1		push	edx
+ 00000012  BA 00000000 R     1		mov		edx, OFFSET programName
+ 00000017  E8 00000000 E     1		call	WriteString
+ 0000001C  5A		     1		pop		edx
+ 0000001D  E8 00000000 E		call		CrLf
+					mWriteStr	myName
+ 00000022  52		     1		push	edx
+ 00000023  BA 00000013 R     1		mov		edx, OFFSET myName
+ 00000028  E8 00000000 E     1		call	WriteString
+ 0000002D  5A		     1		pop		edx
+ 0000002E  E8 00000000 E		call		CrLf
+ 00000033  E8 00000000 E		call		CrLf
+					mWriteStr	instruct1
+ 00000038  52		     1		push	edx
+ 00000039  BA 00000030 R     1		mov		edx, OFFSET instruct1
+ 0000003E  E8 00000000 E     1		call	WriteString
+ 00000043  5A		     1		pop		edx
+ 00000044  E8 00000000 E		call		CrLf
+					mWriteStr	instruct2
+ 00000049  52		     1		push	edx
+ 0000004A  BA 00000063 R     1		mov		edx, OFFSET instruct2
+ 0000004F  E8 00000000 E     1		call	WriteString
+ 00000054  5A		     1		pop		edx
+ 00000055  E8 00000000 E		call		CrLf
+					mWriteStr	instruct3
+ 0000005A  52		     1		push	edx
+ 0000005B  BA 0000009E R     1		mov		edx, OFFSET instruct3
+ 00000060  E8 00000000 E     1		call	WriteString
+ 00000065  5A		     1		pop		edx
+ 00000066  E8 00000000 E		call		CrLf
+
+ 0000006B  C3				ret
+
+ 0000006C			Introduction ENDP
+
 				END main
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    01/05/18 15:06:00
-#Program Template     (template.asm			     Symbols 2 - 1
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/05/18 20:32:12
+Program 6      (program6.asm				     Symbols 2 - 1
 
 
+
+
+Macros:
+
+                N a m e                 Type
+
+mWriteStr  . . . . . . . . . . .	Proc
 
 
 Structures and Unions:
@@ -140,8 +257,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000000 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000007 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 000000B8 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000006C Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -187,6 +304,7 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+Introduction . . . . . . . . . .	P Near	 00000011 _TEXT	Length= 0000005B Public STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -248,7 +366,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000007 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000011 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -369,11 +487,14 @@ MOUSE_EVENT  . . . . . . . . . .	Number	 00000002h
 MessageBox . . . . . . . . . . .	Text   	 MessageBoxA
 NULL . . . . . . . . . . . . . .	Number	 00000000h   
 NUMLOCK_ON . . . . . . . . . . .	Number	 00000020h   
+N_MAX  . . . . . . . . . . . . .	Number	 0000000Ch   
+N_MIN  . . . . . . . . . . . . .	Number	 00000003h   
 OPEN_ALWAYS  . . . . . . . . . .	Number	 00000004h   
 OPEN_EXISTING  . . . . . . . . .	Number	 00000003h   
 PeekConsoleInput . . . . . . . .	Text   	 PeekConsoleInputA
 RIGHT_ALT_PRESSED  . . . . . . .	Number	 00000001h   
 RIGHT_CTRL_PRESSED . . . . . . .	Number	 00000004h   
+R_MIN  . . . . . . . . . . . . .	Number	 00000001h   
 ReadConsoleInput . . . . . . . .	Text   	 ReadConsoleInputA
 ReadConsole  . . . . . . . . . .	Text   	 ReadConsoleA
 SCROLLLOCK_ON  . . . . . . . . .	Number	 00000040h   
@@ -474,6 +595,9 @@ cyan . . . . . . . . . . . . . .	Number	 00000003h
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
+instruct1  . . . . . . . . . . .	Byte	 00000030 _DATA	
+instruct2  . . . . . . . . . . .	Byte	 00000063 _DATA	
+instruct3  . . . . . . . . . . .	Byte	 0000009E _DATA	
 lightBlue  . . . . . . . . . . .	Number	 00000009h   
 lightCyan  . . . . . . . . . . .	Number	 0000000Bh   
 lightGray  . . . . . . . . . . .	Number	 00000007h   
@@ -481,6 +605,8 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
+myName . . . . . . . . . . . . .	Byte	 00000013 _DATA	
+programName  . . . . . . . . . .	Byte	 00000000 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
