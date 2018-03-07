@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 19:00:35
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
 Program 6      (program6.asm				     Page 1 - 1
 
 
@@ -6,6 +6,7 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 19:00:35
 
 				; Author: Matthew Anderson			anderma8@oregonstate.edu
 				; Course: CS 271 - Program 6        Date: March 5, 2018
+				;
 				; Description: Presents the user with an nCr combinatorics problem,
 				;  and evaluates the entered answer. 'n' will be a random number in [3, 12],
 				;  and 'r' will be a random number in [1, n]. Repeats until user decides to
@@ -33,6 +34,7 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 19:00:35
  = 00000003			N_MIN = 3
  = 0000000C			N_MAX = 12
  = 00000001			R_MIN = 1				;R_MAX depends on user input.
+ = 0000000B			INPUT_BUFFER_SIZE = 11	;Size of user answer input buffer.
 
 				;--------------------------------------------------
 				mWriteStr MACRO buffer				
@@ -111,145 +113,245 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 19:00:35
 	   72 6F 6D 20 74
 	   68 65 20 73 65
 	   74 3A 20 00
+ 00000111 48 6F 77 20 6D	problemPrompt	BYTE	"How many ways can you choose? ",0
+	   61 6E 79 20 77
+	   61 79 73 20 63
+	   61 6E 20 79 6F
+	   75 20 63 68 6F
+	   6F 73 65 3F 20
+	   00
+ 00000130  0000000B [		usrAnswerStr	BYTE	INPUT_BUFFER_SIZE DUP(?)
+	    00
+	   ]
 
- 00000111 00000000		nVal			DWORD	?
- 00000115 00000000		rVal			DWORD	?
+ 0000013B 00000000		nVal			DWORD	?
+ 0000013F 00000000		rVal			DWORD	?
+ 00000143 00000000		usrAnswer		DWORD	?
 
-
-				; (insert variable definitions here)
 
  00000000			.code
  00000000			main PROC
 
  00000000  E8 00000000 E		call	Randomize			;Seed random number generator.
- 00000005  E8 00000016			call	Introduction
+ 00000005  E8 00000025			call	Introduction
 
- 0000000A  68 00000111 R		push	OFFSET nVal
- 0000000F  68 00000115 R		push	OFFSET rVal
- 00000014  E8 00000067			call	ShowProblem
+ 0000000A  68 0000013B R		push	OFFSET nVal
+ 0000000F  68 0000013F R		push	OFFSET rVal
+ 00000014  E8 00000076			call	ShowProblem
 
+ 00000019  68 00000143 R		push	OFFSET	usrAnswer
+ 0000001E  E8 000000CB			call	GetData
+ 00000023  E8 00000000 E		call	CrLf
 
-				; (insert executable instructions here)
 
 					exit	; exit to operating system
- 00000019  6A 00	   *	    push   +000000000h
- 0000001B  E8 00000000 E   *	    call   ExitProcess
- 00000020			main ENDP
-
-				; (insert additional procedures here)
+ 00000028  6A 00	   *	    push   +000000000h
+ 0000002A  E8 00000000 E   *	    call   ExitProcess
+ 0000002F			main ENDP
 
 				;--------------------------------------------------
- 00000020			Introduction PROC
+ 0000002F			Introduction PROC
 				;
 				; Prints a greeting message and program
 				; instructions.
 				;
 				;--------------------------------------------------
 					mWriteStr	programName
- 00000020  52		     1		push	edx
- 00000021  BA 00000000 R     1		mov		edx, OFFSET programName
- 00000026  E8 00000000 E     1		call	WriteString
- 0000002B  5A		     1		pop		edx
- 0000002C  E8 00000000 E		call		CrLf
+ 0000002F  52		     1		push	edx
+ 00000030  BA 00000000 R     1		mov		edx, OFFSET programName
+ 00000035  E8 00000000 E     1		call	WriteString
+ 0000003A  5A		     1		pop		edx
+ 0000003B  E8 00000000 E		call		CrLf
 					mWriteStr	myName
- 00000031  52		     1		push	edx
- 00000032  BA 00000013 R     1		mov		edx, OFFSET myName
- 00000037  E8 00000000 E     1		call	WriteString
- 0000003C  5A		     1		pop		edx
- 0000003D  E8 00000000 E		call		CrLf
- 00000042  E8 00000000 E		call		CrLf
+ 00000040  52		     1		push	edx
+ 00000041  BA 00000013 R     1		mov		edx, OFFSET myName
+ 00000046  E8 00000000 E     1		call	WriteString
+ 0000004B  5A		     1		pop		edx
+ 0000004C  E8 00000000 E		call		CrLf
+ 00000051  E8 00000000 E		call		CrLf
 					mWriteStr	instruct1
- 00000047  52		     1		push	edx
- 00000048  BA 00000030 R     1		mov		edx, OFFSET instruct1
- 0000004D  E8 00000000 E     1		call	WriteString
- 00000052  5A		     1		pop		edx
- 00000053  E8 00000000 E		call		CrLf
+ 00000056  52		     1		push	edx
+ 00000057  BA 00000030 R     1		mov		edx, OFFSET instruct1
+ 0000005C  E8 00000000 E     1		call	WriteString
+ 00000061  5A		     1		pop		edx
+ 00000062  E8 00000000 E		call		CrLf
 					mWriteStr	instruct2
- 00000058  52		     1		push	edx
- 00000059  BA 00000063 R     1		mov		edx, OFFSET instruct2
- 0000005E  E8 00000000 E     1		call	WriteString
- 00000063  5A		     1		pop		edx
- 00000064  E8 00000000 E		call		CrLf
+ 00000067  52		     1		push	edx
+ 00000068  BA 00000063 R     1		mov		edx, OFFSET instruct2
+ 0000006D  E8 00000000 E     1		call	WriteString
+ 00000072  5A		     1		pop		edx
+ 00000073  E8 00000000 E		call		CrLf
 					mWriteStr	instruct3
- 00000069  52		     1		push	edx
- 0000006A  BA 0000009E R     1		mov		edx, OFFSET instruct3
- 0000006F  E8 00000000 E     1		call	WriteString
- 00000074  5A		     1		pop		edx
- 00000075  E8 00000000 E		call		CrLf
- 0000007A  E8 00000000 E		call		CrLf
+ 00000078  52		     1		push	edx
+ 00000079  BA 0000009E R     1		mov		edx, OFFSET instruct3
+ 0000007E  E8 00000000 E     1		call	WriteString
+ 00000083  5A		     1		pop		edx
+ 00000084  E8 00000000 E		call		CrLf
+ 00000089  E8 00000000 E		call		CrLf
 
- 0000007F  C3				ret
+ 0000008E  C3				ret
 
- 00000080			Introduction ENDP
-
-
+ 0000008F			Introduction ENDP
 
 
 				;--------------------------------------------------
- 00000080			ShowProblem PROC
+ 0000008F			ShowProblem PROC
 				;
 				; Generates an nCr combinatorics problem for the user
 				; to solve. 'n' is a randomly generated number in
 				; [N_MIN, N_MAX]. 'r' is a randomly generated number
 				; in [R_MIN, n].
 				;
-				; Receives the stack parameters (@n, @r):
-				;	@n is the address to store the generated value
+				; Receives the stack parameters (@n, @r).
+				;	@n: the address to store the generated value
 				;	 of n.
-				;	@r is the address to store the generated value
+				;	@r: the address to store the generated value
 				;	 of r.
 				;--------------------------------------------------
- 00000080  55				push	ebp
- 00000081  8B EC			mov		ebp, esp
+ 0000008F  55				push	ebp
+ 00000090  8B EC			mov		ebp, esp
 					
 					;To generate 'n', we need to pass N_MAX - N_MIN + 1 to RandomRange.
- 00000083			genN:
- 00000083  B8 0000000C			mov		eax, N_MAX
- 00000088  83 E8 03			sub		eax, N_MIN
- 0000008B  40				inc		eax
+ 00000092			genN:
+ 00000092  B8 0000000C			mov		eax, N_MAX
+ 00000097  83 E8 03			sub		eax, N_MIN
+ 0000009A  40				inc		eax
 
- 0000008C  E8 00000000 E		call	RandomRange			;Generate 'n'.
- 00000091  83 C0 03			add		eax, N_MIN			;Get generated value into valid range.
+ 0000009B  E8 00000000 E		call	RandomRange			;Generate 'n'.
+ 000000A0  83 C0 03			add		eax, N_MIN			;Get generated value into valid range.
 
- 00000094  8B 7D 0C			mov		edi, [ebp + 12]		;Load @n.
- 00000097  89 07			mov		[edi], eax			;Save 'n'
+ 000000A3  8B 7D 0C			mov		edi, [ebp + 12]		;Load @n.
+ 000000A6  89 07			mov		[edi], eax			;Save 'n'
 
- 00000099			printN:							;Print number of elements.
+ 000000A8			printN:							;Print number of elements.
 					mWriteStr nStr
- 00000099  52		     1		push	edx
- 0000009A  BA 000000C5 R     1		mov		edx, OFFSET nStr
- 0000009F  E8 00000000 E     1		call	WriteString
- 000000A4  5A		     1		pop		edx
- 000000A5  E8 00000000 E		call	WriteDec
- 000000AA  E8 00000000 E		call	CrLf
+ 000000A8  52		     1		push	edx
+ 000000A9  BA 000000C5 R     1		mov		edx, OFFSET nStr
+ 000000AE  E8 00000000 E     1		call	WriteString
+ 000000B3  5A		     1		pop		edx
+ 000000B4  E8 00000000 E		call	WriteDec
+ 000000B9  E8 00000000 E		call	CrLf
 
- 000000AF			genR:
- 000000AF  83 E8 01			sub		eax, R_MIN			;Pass 'n' - R_MIN + 1 to RandomRange. EAX contains 'n'.
- 000000B2  40				inc		eax
+ 000000BE			genR:
+ 000000BE  83 E8 01			sub		eax, R_MIN			;Pass 'n' - R_MIN + 1 to RandomRange. EAX contains 'n'.
+ 000000C1  40				inc		eax
 
- 000000B3  E8 00000000 E		call	RandomRange
- 000000B8  83 C0 01			add		eax, R_MIN			;EAX contains 'r'.
+ 000000C2  E8 00000000 E		call	RandomRange
+ 000000C7  83 C0 01			add		eax, R_MIN			;EAX contains 'r'.
 
- 000000BB  8B 7D 08			mov		edi, [ebp + 8]
- 000000BE  89 07			mov		[edi], eax			;Save 'r'.
+ 000000CA  8B 7D 08			mov		edi, [ebp + 8]
+ 000000CD  89 07			mov		[edi], eax			;Save 'r'.
 
- 000000C0			printR:
+ 000000CF			printR:
 					mWriteStr rStr
- 000000C0  52		     1		push	edx
- 000000C1  BA 000000E5 R     1		mov		edx, OFFSET rStr
- 000000C6  E8 00000000 E     1		call	WriteString
- 000000CB  5A		     1		pop		edx
- 000000CC  E8 00000000 E		call	WriteDec
- 000000D1  E8 00000000 E		call	CrLf
- 000000D6  E8 00000000 E		call	CrLf
+ 000000CF  52		     1		push	edx
+ 000000D0  BA 000000E5 R     1		mov		edx, OFFSET rStr
+ 000000D5  E8 00000000 E     1		call	WriteString
+ 000000DA  5A		     1		pop		edx
+ 000000DB  E8 00000000 E		call	WriteDec
+ 000000E0  E8 00000000 E		call	CrLf
+ 000000E5  E8 00000000 E		call	CrLf
 
- 000000DB  5D				pop		ebp
- 000000DC  C2 0008			ret 8
+ 000000EA  5D				pop		ebp
+ 000000EB  C2 0008			ret 8
 					
- 000000DF			ShowProblem ENDP
+ 000000EE			ShowProblem ENDP
 
+				;--------------------------------------------------
+ 000000EE			GetData PROC
+				;
+				; Prompts user to enter their answer to the nCr
+				; problem. Validates the entered string into
+				; the numeric value it represents.
+
+				; Receives the stack parameters (@a).
+				;	@a: Address to store user's answer.
+				;--------------------------------------------------
+ 000000EE  55				push	ebp
+ 000000EF  8B EC			mov		ebp, esp
+ 000000F1  8B 7D 08			mov		edi, [ebp + 8]		;EDI contains destination address.
+
+					mWriteStr problemPrompt
+ 000000F4  52		     1		push	edx
+ 000000F5  BA 00000111 R     1		mov		edx, OFFSET problemPrompt
+ 000000FA  E8 00000000 E     1		call	WriteString
+ 000000FF  5A		     1		pop		edx
+
+ 00000100			getInput:
+ 00000100  BA 00000130 R		mov		edx, OFFSET usrAnswerStr
+ 00000105  B9 0000000A			mov		ecx, INPUT_BUFFER_SIZE - 1
+ 0000010A  E8 00000000 E		call	ReadString			;usrAnswerStr contains entered string.
+
+ 0000010F  68 00000130 R		push	OFFSET usrAnswerStr
+ 00000114  50				push	eax					;Size of input string.
+ 00000115  E8 00000004			call	IsNumeric
+					
+ 0000011A  5D				pop	ebp
+
+ 0000011B  C2 0004			ret 4
+
+ 0000011E			GetData ENDP
+
+
+				;--------------------------------------------------
+ 0000011E			IsNumeric PROC
+				;
+				; Checks if a string represents a valid POSITIVE 
+				; integer.
+
+				; Receives the stack parameters (@a, size).
+				;	@a: Address of the string.
+				;	size: size of the string.
+				;
+				; Returns: ZF = 1 if the string represents a valid
+				; integer; else, ZF = 0.
+				;--------------------------------------------------
+ 0000011E  56				push	esi
+ 0000011F  51				push	ecx
+ 00000120  50				push	eax
+ 00000121  53				push	ebx
+ 00000122  55				push	ebp
+ 00000123  8B EC			mov		ebp, esp
+
+ 00000125  8B 75 1C			mov		esi, [ebp + 28]		;ESI contains address of string.
+ 00000128  8B 4D 18			mov		ecx, [ebp + 24]		;ECX contains size of string.
+ 0000012B  FC				cld
+
+					;Check if string is empty. If yes, set ZF = 0 and finish.
+ 0000012C  83 F9 00			cmp		ecx, 0
+ 0000012F  74 12			je		emptyStr
+
+ 00000131			nextDigit:
+ 00000131  AC				lodsb						;AL contains next character.
+
+					;Valid numeric characters will have ASCII codes in [48, 57].
+ 00000132  3C 30			cmp		al, 48
+ 00000134  7C 12			jl		finished			;ZF = 0
+ 00000136  3C 39			cmp		al, 57
+ 00000138  7F 0E			jg		finished			;ZF = 0
+
+ 0000013A  E2 F5			loop	nextDigit
+
+ 0000013C  33 C0			xor		eax, eax
+ 0000013E  83 F8 00			cmp		eax, 0				;Set ZF = 1, since string is valid integer representation.
+ 00000141  EB 05			jmp		finished
+
+ 00000143			emptyStr:	;String was empty. Set ZF = 0, since this isn't valid numeric representation.
+ 00000143  33 C0			xor		eax, eax
+ 00000145  83 F8 01			cmp		eax, 1
+
+ 00000148			finished:
+ 00000148  5D				pop		ebp
+ 00000149  5B				pop		ebx
+ 0000014A  58				pop		eax
+ 0000014B  59				pop		ecx
+ 0000014C  5E				pop		esi
+
+ 0000014D  C2 0008			ret		8
+
+ 00000150			IsNumeric ENDP
 				END main
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 19:00:35
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
 Program 6      (program6.asm				     Symbols 2 - 1
 
 
@@ -350,8 +452,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000119 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000DF Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000147 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000150 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -378,6 +480,8 @@ GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+GetData  . . . . . . . . . . . .	P Near	 000000EE _TEXT	Length= 00000030 Public STDCALL
+  getInput . . . . . . . . . . .	L Near	 00000100 _TEXT	
 GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -397,8 +501,12 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-Introduction . . . . . . . . . .	P Near	 00000020 _TEXT	Length= 00000060 Public STDCALL
+Introduction . . . . . . . . . .	P Near	 0000002F _TEXT	Length= 00000060 Public STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+IsNumeric  . . . . . . . . . . .	P Near	 0000011E _TEXT	Length= 00000032 Public STDCALL
+  nextDigit  . . . . . . . . . .	L Near	 00000131 _TEXT	
+  emptyStr . . . . . . . . . . .	L Near	 00000143 _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000148 _TEXT	
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -433,11 +541,11 @@ SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ShowProblem  . . . . . . . . . .	P Near	 00000080 _TEXT	Length= 0000005F Public STDCALL
-  genN . . . . . . . . . . . . .	L Near	 00000083 _TEXT	
-  printN . . . . . . . . . . . .	L Near	 00000099 _TEXT	
-  genR . . . . . . . . . . . . .	L Near	 000000AF _TEXT	
-  printR . . . . . . . . . . . .	L Near	 000000C0 _TEXT	
+ShowProblem  . . . . . . . . . .	P Near	 0000008F _TEXT	Length= 0000005F Public STDCALL
+  genN . . . . . . . . . . . . .	L Near	 00000092 _TEXT	
+  printN . . . . . . . . . . . .	L Near	 000000A8 _TEXT	
+  genR . . . . . . . . . . . . .	L Near	 000000BE _TEXT	
+  printR . . . . . . . . . . . .	L Near	 000000CF _TEXT	
 Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -464,7 +572,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000020 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000002F Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -550,6 +658,7 @@ IDRETRY  . . . . . . . . . . . .	Number	 00000004h
 IDTIMEOUT  . . . . . . . . . . .	Number	 00007D00h   
 IDTRYAGAIN . . . . . . . . . . .	Number	 0000000Ah   
 IDYES  . . . . . . . . . . . . .	Number	 00000006h   
+INPUT_BUFFER_SIZE  . . . . . . .	Number	 0000000Bh   
 INVALID_HANDLE_VALUE . . . . . .	Number	 -00000001h   
 KBDOWN_FLAG  . . . . . . . . . .	Number	 00000001h   
 KEY_EVENT  . . . . . . . . . . .	Number	 00000001h   
@@ -705,11 +814,14 @@ lightRed . . . . . . . . . . . .	Number	 0000000Ch
 magenta  . . . . . . . . . . . .	Number	 00000005h   
 myName . . . . . . . . . . . . .	Byte	 00000013 _DATA	
 nStr . . . . . . . . . . . . . .	Byte	 000000C5 _DATA	
-nVal . . . . . . . . . . . . . .	DWord	 00000111 _DATA	
+nVal . . . . . . . . . . . . . .	DWord	 0000013B _DATA	
+problemPrompt  . . . . . . . . .	Byte	 00000111 _DATA	
 programName  . . . . . . . . . .	Byte	 00000000 _DATA	
 rStr . . . . . . . . . . . . . .	Byte	 000000E5 _DATA	
-rVal . . . . . . . . . . . . . .	DWord	 00000115 _DATA	
+rVal . . . . . . . . . . . . . .	DWord	 0000013F _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
+usrAnswerStr . . . . . . . . . .	Byte	 00000130 _DATA	
+usrAnswer  . . . . . . . . . . .	DWord	 00000143 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
