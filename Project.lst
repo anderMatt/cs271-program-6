@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 21:05:45
 Program 6      (program6.asm				     Page 1 - 1
 
 
@@ -123,10 +123,20 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
  00000130  0000000B [		usrAnswerStr	BYTE	INPUT_BUFFER_SIZE DUP(?)
 	    00
 	   ]
+ 0000013B 59 6F 75 20 6D	inputErrMsg		BYTE	"You must enter a positive integer! Try again: ",0
+	   75 73 74 20 65
+	   6E 74 65 72 20
+	   61 20 70 6F 73
+	   69 74 69 76 65
+	   20 69 6E 74 65
+	   67 65 72 21 20
+	   54 72 79 20 61
+	   67 61 69 6E 3A
+	   20 00
 
- 0000013B 00000000		nVal			DWORD	?
- 0000013F 00000000		rVal			DWORD	?
- 00000143 00000000		usrAnswer		DWORD	?
+ 0000016A 00000000		nVal			DWORD	?
+ 0000016E 00000000		rVal			DWORD	?
+ 00000172 00000000		usrAnswer		DWORD	?
 
 
  00000000			.code
@@ -135,11 +145,11 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
  00000000  E8 00000000 E		call	Randomize			;Seed random number generator.
  00000005  E8 00000025			call	Introduction
 
- 0000000A  68 0000013B R		push	OFFSET nVal
- 0000000F  68 0000013F R		push	OFFSET rVal
+ 0000000A  68 0000016A R		push	OFFSET nVal
+ 0000000F  68 0000016E R		push	OFFSET rVal
  00000014  E8 00000076			call	ShowProblem
 
- 00000019  68 00000143 R		push	OFFSET	usrAnswer
+ 00000019  68 00000172 R		push	OFFSET	usrAnswer
  0000001E  E8 000000CB			call	GetData
  00000023  E8 00000000 E		call	CrLf
 
@@ -257,6 +267,7 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
 					
  000000EE			ShowProblem ENDP
 
+
 				;--------------------------------------------------
  000000EE			GetData PROC
 				;
@@ -284,17 +295,35 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
 
  0000010F  68 00000130 R		push	OFFSET usrAnswerStr
  00000114  50				push	eax					;Size of input string.
- 00000115  E8 00000004			call	IsNumeric
+ 00000115  E8 00000025			call	IsNumeric
+
+ 0000011A  74 13			jz		convertInput			
+
+					;User entered a non-numeric string. Print error, and try again.
+ 0000011C  E8 00000000 E		call	CrLf
+					mWriteStr	inputErrMsg
+ 00000121  52		     1		push	edx
+ 00000122  BA 0000013B R     1		mov		edx, OFFSET inputErrMsg
+ 00000127  E8 00000000 E     1		call	WriteString
+ 0000012C  5A		     1		pop		edx
+ 0000012D  EB D1			jmp		getInput
+
+ 0000012F			convertInput:	
 					
- 0000011A  5D				pop	ebp
+ 0000012F  68 00000130 R		push	OFFSET usrAnswerStr
+ 00000134  50				push	eax					;Number of digits in entered string.
+ 00000135  57				push	edi					;Output variable.
+ 00000136  E8 00000036			call	StringToNumber
 
- 0000011B  C2 0004			ret 4
+ 0000013B  5D				pop	ebp
 
- 0000011E			GetData ENDP
+ 0000013C  C2 0004			ret 4
+
+ 0000013F			GetData ENDP
 
 
 				;--------------------------------------------------
- 0000011E			IsNumeric PROC
+ 0000013F			IsNumeric PROC
 				;
 				; Checks if a string represents a valid POSITIVE 
 				; integer.
@@ -306,52 +335,106 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
 				; Returns: ZF = 1 if the string represents a valid
 				; integer; else, ZF = 0.
 				;--------------------------------------------------
- 0000011E  56				push	esi
- 0000011F  51				push	ecx
- 00000120  50				push	eax
- 00000121  53				push	ebx
- 00000122  55				push	ebp
- 00000123  8B EC			mov		ebp, esp
+ 0000013F  56				push	esi
+ 00000140  51				push	ecx
+ 00000141  50				push	eax
+ 00000142  53				push	ebx
+ 00000143  55				push	ebp
+ 00000144  8B EC			mov		ebp, esp
 
- 00000125  8B 75 1C			mov		esi, [ebp + 28]		;ESI contains address of string.
- 00000128  8B 4D 18			mov		ecx, [ebp + 24]		;ECX contains size of string.
- 0000012B  FC				cld
+ 00000146  8B 75 1C			mov		esi, [ebp + 28]		;ESI contains address of string.
+ 00000149  8B 4D 18			mov		ecx, [ebp + 24]		;ECX contains size of string.
+ 0000014C  FC				cld
 
 					;Check if string is empty. If yes, set ZF = 0 and finish.
- 0000012C  83 F9 00			cmp		ecx, 0
- 0000012F  74 12			je		emptyStr
+ 0000014D  83 F9 00			cmp		ecx, 0
+ 00000150  74 12			je		emptyStr
 
- 00000131			nextDigit:
- 00000131  AC				lodsb						;AL contains next character.
+ 00000152			nextDigit:
+ 00000152  AC				lodsb						;AL contains next character.
 
 					;Valid numeric characters will have ASCII codes in [48, 57].
- 00000132  3C 30			cmp		al, 48
- 00000134  7C 12			jl		finished			;ZF = 0
- 00000136  3C 39			cmp		al, 57
- 00000138  7F 0E			jg		finished			;ZF = 0
+ 00000153  3C 30			cmp		al, 48
+ 00000155  7C 12			jl		finished			;ZF = 0
+ 00000157  3C 39			cmp		al, 57
+ 00000159  7F 0E			jg		finished			;ZF = 0
 
- 0000013A  E2 F5			loop	nextDigit
+ 0000015B  E2 F5			loop	nextDigit
 
- 0000013C  33 C0			xor		eax, eax
- 0000013E  83 F8 00			cmp		eax, 0				;Set ZF = 1, since string is valid integer representation.
- 00000141  EB 05			jmp		finished
+ 0000015D  33 C0			xor		eax, eax
+ 0000015F  83 F8 00			cmp		eax, 0				;Set ZF = 1, since string is valid integer representation.
+ 00000162  EB 05			jmp		finished
 
- 00000143			emptyStr:	;String was empty. Set ZF = 0, since this isn't valid numeric representation.
- 00000143  33 C0			xor		eax, eax
- 00000145  83 F8 01			cmp		eax, 1
+ 00000164			emptyStr:	;String was empty. Set ZF = 0, since this isn't valid numeric representation.
+ 00000164  33 C0			xor		eax, eax
+ 00000166  83 F8 01			cmp		eax, 1
 
- 00000148			finished:
- 00000148  5D				pop		ebp
- 00000149  5B				pop		ebx
- 0000014A  58				pop		eax
- 0000014B  59				pop		ecx
- 0000014C  5E				pop		esi
+ 00000169			finished:
+ 00000169  5D				pop		ebp
+ 0000016A  5B				pop		ebx
+ 0000016B  58				pop		eax
+ 0000016C  59				pop		ecx
+ 0000016D  5E				pop		esi
 
- 0000014D  C2 0008			ret		8
+ 0000016E  C2 0008			ret		8
 
- 00000150			IsNumeric ENDP
+ 00000171			IsNumeric ENDP
+
+				;--------------------------------------------------
+ 00000171			StringToNumber PROC
+				;
+				; Generates the numeric value of a string representation
+				; of a positive integer.
+				;
+				; Receives stack parameters (@s, n, @o).
+				;	@s: string representation of positive integer.
+				;	n: number of characters before null-terminator.
+				;	@o: output variable to store numeric value.
+				;
+				;--------------------------------------------------
+ 00000171  50				push	eax
+ 00000172  56				push	esi
+ 00000173  51				push	ecx
+ 00000174  53				push	ebx
+ 00000175  55				push	ebp
+
+ 00000176  8B EC			mov		ebp, esp
+
+ 00000178  8B 75 20			mov		esi, [ebp + 32]		;Load address of string.
+ 0000017B  8B 4D 1C			mov		ecx, [ebp + 28]		;Load number of characters.
+ 0000017E  8B 7D 18			mov		edi, [ebp + 24]		;Load output variable.
+
+ 00000181  33 C0			xor		eax, eax			;Holds numeric value.
+
+ 00000183			convertChar:
+ 00000183  BB 0000000A			mov		ebx, 10
+ 00000188  F7 E3			mul		ebx
+
+ 0000018A  50				push	eax					;Save current value before loading next byte.
+ 0000018B  AC				lodsb
+
+ 0000018C  0F B6 D8			movzx	ebx, al
+ 0000018F  83 EB 30			sub		ebx, 48				;Convert char to numeric value.
+
+ 00000192  58				pop		eax
+ 00000193  03 C3			add		eax, ebx			;Add digit to accumulating value.
+
+ 00000195  E2 EC			loop	convertChar
+
+ 00000197  89 07			mov		[edi], eax			;Save numeric value to output variable.
+
+ 00000199  5D				pop		ebp
+ 0000019A  5B				pop		ebx
+ 0000019B  59				pop		ecx
+ 0000019C  5E				pop		esi
+ 0000019D  58				pop		eax
+
+ 0000019E  C2 000C			ret 12
+
+ 000001A1			StringToNumber ENDP
+
 				END main
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 20:23:20
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/06/18 21:05:45
 Program 6      (program6.asm				     Symbols 2 - 1
 
 
@@ -452,8 +535,8 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000147 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000150 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000176 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000001A1 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -480,8 +563,9 @@ GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-GetData  . . . . . . . . . . . .	P Near	 000000EE _TEXT	Length= 00000030 Public STDCALL
+GetData  . . . . . . . . . . . .	P Near	 000000EE _TEXT	Length= 00000051 Public STDCALL
   getInput . . . . . . . . . . .	L Near	 00000100 _TEXT	
+  convertInput . . . . . . . . .	L Near	 0000012F _TEXT	
 GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -503,10 +587,10 @@ HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Introduction . . . . . . . . . .	P Near	 0000002F _TEXT	Length= 00000060 Public STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-IsNumeric  . . . . . . . . . . .	P Near	 0000011E _TEXT	Length= 00000032 Public STDCALL
-  nextDigit  . . . . . . . . . .	L Near	 00000131 _TEXT	
-  emptyStr . . . . . . . . . . .	L Near	 00000143 _TEXT	
-  finished . . . . . . . . . . .	L Near	 00000148 _TEXT	
+IsNumeric  . . . . . . . . . . .	P Near	 0000013F _TEXT	Length= 00000032 Public STDCALL
+  nextDigit  . . . . . . . . . .	L Near	 00000152 _TEXT	
+  emptyStr . . . . . . . . . . .	L Near	 00000164 _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000169 _TEXT	
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -553,6 +637,8 @@ Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+StringToNumber . . . . . . . . .	P Near	 00000171 _TEXT	Length= 00000030 Public STDCALL
+  convertChar  . . . . . . . . .	L Near	 00000183 _TEXT	
 SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -802,6 +888,7 @@ cyan . . . . . . . . . . . . . .	Number	 00000003h
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
+inputErrMsg  . . . . . . . . . .	Byte	 0000013B _DATA	
 instruct1  . . . . . . . . . . .	Byte	 00000030 _DATA	
 instruct2  . . . . . . . . . . .	Byte	 00000063 _DATA	
 instruct3  . . . . . . . . . . .	Byte	 0000009E _DATA	
@@ -814,14 +901,14 @@ lightRed . . . . . . . . . . . .	Number	 0000000Ch
 magenta  . . . . . . . . . . . .	Number	 00000005h   
 myName . . . . . . . . . . . . .	Byte	 00000013 _DATA	
 nStr . . . . . . . . . . . . . .	Byte	 000000C5 _DATA	
-nVal . . . . . . . . . . . . . .	DWord	 0000013B _DATA	
+nVal . . . . . . . . . . . . . .	DWord	 0000016A _DATA	
 problemPrompt  . . . . . . . . .	Byte	 00000111 _DATA	
 programName  . . . . . . . . . .	Byte	 00000000 _DATA	
 rStr . . . . . . . . . . . . . .	Byte	 000000E5 _DATA	
-rVal . . . . . . . . . . . . . .	DWord	 0000013F _DATA	
+rVal . . . . . . . . . . . . . .	DWord	 0000016E _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
 usrAnswerStr . . . . . . . . . .	Byte	 00000130 _DATA	
-usrAnswer  . . . . . . . . . . .	DWord	 00000143 _DATA	
+usrAnswer  . . . . . . . . . . .	DWord	 00000172 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   

@@ -44,6 +44,7 @@ nStr			BYTE	"Number of elements in the set: ",0
 rStr			BYTE	"Number of elements to choose from the set: ",0
 problemPrompt	BYTE	"How many ways can you choose? ",0
 usrAnswerStr	BYTE	INPUT_BUFFER_SIZE DUP(?)
+inputErrMsg		BYTE	"You must enter a positive integer! Try again: ",0
 
 nVal			DWORD	?
 rVal			DWORD	?
@@ -148,6 +149,7 @@ printR:
 	
 ShowProblem ENDP
 
+
 ;--------------------------------------------------
 GetData PROC
 ;
@@ -172,7 +174,21 @@ getInput:
 	push	OFFSET usrAnswerStr
 	push	eax					;Size of input string.
 	call	IsNumeric
+
+	jz		convertInput			
+
+	;User entered a non-numeric string. Print error, and try again.
+	call	CrLf
+	mWriteStr	inputErrMsg
+	jmp		getInput
+
+convertInput:	
 	
+	push	OFFSET usrAnswerStr
+	push	eax					;Number of digits in entered string.
+	push	edi					;Output variable.
+	call	StringToNumber
+
 	pop	ebp
 
 	ret 4
@@ -237,4 +253,58 @@ finished:
 	ret		8
 
 IsNumeric ENDP
+
+;--------------------------------------------------
+StringToNumber PROC
+;
+; Generates the numeric value of a string representation
+; of a positive integer.
+;
+; Receives stack parameters (@s, n, @o).
+;	@s: string representation of positive integer.
+;	n: number of characters before null-terminator.
+;	@o: output variable to store numeric value.
+;
+;--------------------------------------------------
+	push	eax
+	push	esi
+	push	ecx
+	push	ebx
+	push	ebp
+
+	mov		ebp, esp
+
+	mov		esi, [ebp + 32]		;Load address of string.
+	mov		ecx, [ebp + 28]		;Load number of characters.
+	mov		edi, [ebp + 24]		;Load output variable.
+
+	xor		eax, eax			;Holds numeric value.
+
+convertChar:
+	mov		ebx, 10
+	mul		ebx
+
+	push	eax					;Save current value before loading next byte.
+	lodsb
+
+	movzx	ebx, al
+	sub		ebx, 48				;Convert char to numeric value.
+
+	pop		eax
+	add		eax, ebx			;Add digit to accumulating value.
+
+	loop	convertChar
+
+	mov		[edi], eax			;Save numeric value to output variable.
+
+	pop		ebp
+	pop		ebx
+	pop		ecx
+	pop		esi
+	pop		eax
+
+	ret 12
+
+StringToNumber ENDP
+
 END main
