@@ -53,6 +53,10 @@ ansStr4			BYTE	".",0
 
 incorrectStr	BYTE	"You need to hit the books and study some more!",0
 correctStr		BYTE	"Well done, you answered correctly!",0
+playAgainStr	BYTE	"Would you like to play again? (y/n): ",0 
+playAgainErr	BYTE	"Value other than 'y' or 'n' entered, so I'm going to exit!",0
+goodbyeStr		BYTE	"Goodbye!",0
+playAgainBuffer	BYTE	?
 
 nVal			DWORD	?
 rVal			DWORD	?
@@ -66,6 +70,8 @@ main PROC
 
 	call	Randomize			;Seed random number generator.
 	call	Introduction
+
+play:
 
 	push	OFFSET nVal
 	push	OFFSET rVal
@@ -86,6 +92,14 @@ main PROC
 	push	theAnswer
 	push	usrAnswer
 	call	ShowResults
+
+	;Ask if user wants another problem.
+	call	AskPlayAgain
+	jz		play
+
+	call	CrLf
+	mWriteStr goodbyeStr
+	call	CrLf
 
 
 	exit	; exit to operating system
@@ -108,7 +122,6 @@ Introduction PROC
 	mWriteStr	instruct2
 	call		CrLf
 	mWriteStr	instruct3
-	call		CrLf
 	call		CrLf
 
 	ret
@@ -145,6 +158,8 @@ genN:
 	mov		edi, [ebp + 12]		;Load @n.
 	mov		[edi], eax			;Save 'n'
 
+	call	CrLf
+	call	CrLf
 printN:							;Print number of elements.
 	mWriteStr nStr
 	call	WriteDec
@@ -507,4 +522,61 @@ return:
 
 ShowResults ENDP
 
+;--------------------------------------------------
+AskPlayAgain PROC
+;
+; Asks user if they would like to solve another
+; problem.
+;
+; Returns: ZF = 1 if user indicates they want another
+; problem; else, ZF = 0.
+;
+;
+;--------------------------------------------------
+	push	eax
+	push	ecx
+	push	edx
+	mWriteStr playAgainStr
+
+	xor		edx, edx
+	mov		edx, OFFSET playAgainBuffer
+	mov		ecx, 1
+	call	ReadChar			;User will enter 'Y' or 'N'. Case insensitive.
+
+	;Check user's input.
+	cmp		al, 'y'				;Entered 'y'.
+	je		onDone
+	cmp		al, 'Y'
+	je		onDone				;Entered 'Y'.
+	cmp		al, 'n'				;Entered 'n'.
+	je		nEntered
+	cmp		al, 'N'				;Entered 'N'.
+	je		nEntered
+	
+	;Something other than 'y' or 'n' entered. Interpret as intention to exit.
+	call	CrLf
+	mWriteStr playAgainErr
+	call	CrLf
+	jmp		onDone
+
+nEntered:							;Clear ZF.
+	mov		eax, 0
+	cmp		eax, 1
+	jmp		onDone
+
+onDone:								;Need to reset variables for next round.
+	mov		edi, OFFSET usrAnswer
+	mov		eax, 0
+	mov		[edi], eax				;Clear user's last answer.
+
+	mov		edi, OFFSET theAnswer	;Clear last problem's answer.
+	mov		[edi], eax
+
+	pop		edx
+	pop		ecx
+	pop		eax
+
+	ret
+
+AskPlayAgain ENDP
 END main

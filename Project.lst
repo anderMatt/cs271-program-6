@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
 Program 6      (program6.asm				     Page 1 - 1
 
 
@@ -165,93 +165,129 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 	   72 65 64 20 63
 	   6F 72 72 65 63
 	   74 6C 79 21 00
+ 000001F1 57 6F 75 6C 64	playAgainStr	BYTE	"Would you like to play again? (y/n): ",0 
+	   20 79 6F 75 20
+	   6C 69 6B 65 20
+	   74 6F 20 70 6C
+	   61 79 20 61 67
+	   61 69 6E 3F 20
+	   28 79 2F 6E 29
+	   3A 20 00
+ 00000217 56 61 6C 75 65	playAgainErr	BYTE	"Value other than 'y' or 'n' entered, so I'm going to exit!",0
+	   20 6F 74 68 65
+	   72 20 74 68 61
+	   6E 20 27 79 27
+	   20 6F 72 20 27
+	   6E 27 20 65 6E
+	   74 65 72 65 64
+	   2C 20 73 6F 20
+	   49 27 6D 20 67
+	   6F 69 6E 67 20
+	   74 6F 20 65 78
+	   69 74 21 00
+ 00000252 47 6F 6F 64 62	goodbyeStr		BYTE	"Goodbye!",0
+	   79 65 21 00
+ 0000025B 00			playAgainBuffer	BYTE	?
 
- 000001F1 00000000		nVal			DWORD	?
- 000001F5 00000000		rVal			DWORD	?
- 000001F9 00000000		usrAnswer		DWORD	?
+ 0000025C 00000000		nVal			DWORD	?
+ 00000260 00000000		rVal			DWORD	?
+ 00000264 00000000		usrAnswer		DWORD	?
 
- 000001FD 00000000		theAnswer		DWORD 0
+ 00000268 00000000		theAnswer		DWORD 0
 
 
  00000000			.code
  00000000			main PROC
 
  00000000  E8 00000000 E		call	Randomize			;Seed random number generator.
- 00000005  E8 00000058			call	Introduction
+ 00000005  E8 00000075			call	Introduction
 
- 0000000A  68 000001F1 R		push	OFFSET nVal
- 0000000F  68 000001F5 R		push	OFFSET rVal
- 00000014  E8 000000A9			call	ShowProblem
+ 0000000A			play:
 
- 00000019  FF 35 000001F1 R		push	nVal
- 0000001F  FF 35 000001F5 R		push	rVal
- 00000025  68 000001FD R		push	OFFSET theAnswer
- 0000002A  E8 000001A5			call	Combinations
+ 0000000A  68 0000025C R		push	OFFSET nVal
+ 0000000F  68 00000260 R		push	OFFSET rVal
+ 00000014  E8 000000C1			call	ShowProblem
 
- 0000002F  68 000001F9 R		push	OFFSET	usrAnswer
- 00000034  E8 000000E8			call	GetData
+ 00000019  FF 35 0000025C R		push	nVal
+ 0000001F  FF 35 00000260 R		push	rVal
+ 00000025  68 00000268 R		push	OFFSET theAnswer
+ 0000002A  E8 000001C7			call	Combinations
+
+ 0000002F  68 00000264 R		push	OFFSET	usrAnswer
+ 00000034  E8 0000010A			call	GetData
  00000039  E8 00000000 E		call	CrLf
 
 					;Report answer
- 0000003E  FF 35 000001F1 R		push	nVal
- 00000044  FF 35 000001F5 R		push	rVal
- 0000004A  FF 35 000001FD R		push	theAnswer
- 00000050  FF 35 000001F9 R		push	usrAnswer
- 00000056  E8 000001F9			call	ShowResults
+ 0000003E  FF 35 0000025C R		push	nVal
+ 00000044  FF 35 00000260 R		push	rVal
+ 0000004A  FF 35 00000268 R		push	theAnswer
+ 00000050  FF 35 00000264 R		push	usrAnswer
+ 00000056  E8 0000021B			call	ShowResults
+
+					;Ask if user wants another problem.
+ 0000005B  E8 0000029D			call	AskPlayAgain
+ 00000060  74 A8			jz		play
+
+ 00000062  E8 00000000 E		call	CrLf
+					mWriteStr goodbyeStr
+ 00000067  52		     1		push	edx
+ 00000068  BA 00000252 R     1		mov		edx, OFFSET goodbyeStr
+ 0000006D  E8 00000000 E     1		call	WriteString
+ 00000072  5A		     1		pop		edx
+ 00000073  E8 00000000 E		call	CrLf
 
 
 					exit	; exit to operating system
- 0000005B  6A 00	   *	    push   +000000000h
- 0000005D  E8 00000000 E   *	    call   ExitProcess
- 00000062			main ENDP
+ 00000078  6A 00	   *	    push   +000000000h
+ 0000007A  E8 00000000 E   *	    call   ExitProcess
+ 0000007F			main ENDP
 
 				;--------------------------------------------------
- 00000062			Introduction PROC
+ 0000007F			Introduction PROC
 				;
 				; Prints a greeting message and program
 				; instructions.
 				;
 				;--------------------------------------------------
 					mWriteStr	programName
- 00000062  52		     1		push	edx
- 00000063  BA 00000000 R     1		mov		edx, OFFSET programName
- 00000068  E8 00000000 E     1		call	WriteString
- 0000006D  5A		     1		pop		edx
- 0000006E  E8 00000000 E		call		CrLf
+ 0000007F  52		     1		push	edx
+ 00000080  BA 00000000 R     1		mov		edx, OFFSET programName
+ 00000085  E8 00000000 E     1		call	WriteString
+ 0000008A  5A		     1		pop		edx
+ 0000008B  E8 00000000 E		call		CrLf
 					mWriteStr	myName
- 00000073  52		     1		push	edx
- 00000074  BA 00000013 R     1		mov		edx, OFFSET myName
- 00000079  E8 00000000 E     1		call	WriteString
- 0000007E  5A		     1		pop		edx
- 0000007F  E8 00000000 E		call		CrLf
- 00000084  E8 00000000 E		call		CrLf
+ 00000090  52		     1		push	edx
+ 00000091  BA 00000013 R     1		mov		edx, OFFSET myName
+ 00000096  E8 00000000 E     1		call	WriteString
+ 0000009B  5A		     1		pop		edx
+ 0000009C  E8 00000000 E		call		CrLf
+ 000000A1  E8 00000000 E		call		CrLf
 					mWriteStr	instruct1
- 00000089  52		     1		push	edx
- 0000008A  BA 00000030 R     1		mov		edx, OFFSET instruct1
- 0000008F  E8 00000000 E     1		call	WriteString
- 00000094  5A		     1		pop		edx
- 00000095  E8 00000000 E		call		CrLf
+ 000000A6  52		     1		push	edx
+ 000000A7  BA 00000030 R     1		mov		edx, OFFSET instruct1
+ 000000AC  E8 00000000 E     1		call	WriteString
+ 000000B1  5A		     1		pop		edx
+ 000000B2  E8 00000000 E		call		CrLf
 					mWriteStr	instruct2
- 0000009A  52		     1		push	edx
- 0000009B  BA 00000063 R     1		mov		edx, OFFSET instruct2
- 000000A0  E8 00000000 E     1		call	WriteString
- 000000A5  5A		     1		pop		edx
- 000000A6  E8 00000000 E		call		CrLf
+ 000000B7  52		     1		push	edx
+ 000000B8  BA 00000063 R     1		mov		edx, OFFSET instruct2
+ 000000BD  E8 00000000 E     1		call	WriteString
+ 000000C2  5A		     1		pop		edx
+ 000000C3  E8 00000000 E		call		CrLf
 					mWriteStr	instruct3
- 000000AB  52		     1		push	edx
- 000000AC  BA 0000009E R     1		mov		edx, OFFSET instruct3
- 000000B1  E8 00000000 E     1		call	WriteString
- 000000B6  5A		     1		pop		edx
- 000000B7  E8 00000000 E		call		CrLf
- 000000BC  E8 00000000 E		call		CrLf
+ 000000C8  52		     1		push	edx
+ 000000C9  BA 0000009E R     1		mov		edx, OFFSET instruct3
+ 000000CE  E8 00000000 E     1		call	WriteString
+ 000000D3  5A		     1		pop		edx
+ 000000D4  E8 00000000 E		call		CrLf
 
- 000000C1  C3				ret
+ 000000D9  C3				ret
 
- 000000C2			Introduction ENDP
+ 000000DA			Introduction ENDP
 
 
 				;--------------------------------------------------
- 000000C2			ShowProblem PROC
+ 000000DA			ShowProblem PROC
 				;
 				; Generates an nCr combinatorics problem for the user
 				; to solve. 'n' is a randomly generated number in
@@ -264,58 +300,60 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				;	@r: the address to store the generated value
 				;	 of r.
 				;--------------------------------------------------
- 000000C2  55				push	ebp
- 000000C3  8B EC			mov		ebp, esp
+ 000000DA  55				push	ebp
+ 000000DB  8B EC			mov		ebp, esp
 					
 					;To generate 'n', we need to pass N_MAX - N_MIN + 1 to RandomRange.
- 000000C5			genN:
- 000000C5  B8 0000000C			mov		eax, N_MAX
- 000000CA  83 E8 03			sub		eax, N_MIN
- 000000CD  40				inc		eax
+ 000000DD			genN:
+ 000000DD  B8 0000000C			mov		eax, N_MAX
+ 000000E2  83 E8 03			sub		eax, N_MIN
+ 000000E5  40				inc		eax
 
- 000000CE  E8 00000000 E		call	RandomRange			;Generate 'n'.
- 000000D3  83 C0 03			add		eax, N_MIN			;Get generated value into valid range.
+ 000000E6  E8 00000000 E		call	RandomRange			;Generate 'n'.
+ 000000EB  83 C0 03			add		eax, N_MIN			;Get generated value into valid range.
 
- 000000D6  8B 7D 0C			mov		edi, [ebp + 12]		;Load @n.
- 000000D9  89 07			mov		[edi], eax			;Save 'n'
+ 000000EE  8B 7D 0C			mov		edi, [ebp + 12]		;Load @n.
+ 000000F1  89 07			mov		[edi], eax			;Save 'n'
 
- 000000DB			printN:							;Print number of elements.
+ 000000F3  E8 00000000 E		call	CrLf
+ 000000F8  E8 00000000 E		call	CrLf
+ 000000FD			printN:							;Print number of elements.
 					mWriteStr nStr
- 000000DB  52		     1		push	edx
- 000000DC  BA 000000C5 R     1		mov		edx, OFFSET nStr
- 000000E1  E8 00000000 E     1		call	WriteString
- 000000E6  5A		     1		pop		edx
- 000000E7  E8 00000000 E		call	WriteDec
- 000000EC  E8 00000000 E		call	CrLf
+ 000000FD  52		     1		push	edx
+ 000000FE  BA 000000C5 R     1		mov		edx, OFFSET nStr
+ 00000103  E8 00000000 E     1		call	WriteString
+ 00000108  5A		     1		pop		edx
+ 00000109  E8 00000000 E		call	WriteDec
+ 0000010E  E8 00000000 E		call	CrLf
 
- 000000F1			genR:
- 000000F1  83 E8 01			sub		eax, R_MIN			;Pass 'n' - R_MIN + 1 to RandomRange. EAX contains 'n'.
- 000000F4  40				inc		eax
+ 00000113			genR:
+ 00000113  83 E8 01			sub		eax, R_MIN			;Pass 'n' - R_MIN + 1 to RandomRange. EAX contains 'n'.
+ 00000116  40				inc		eax
 
- 000000F5  E8 00000000 E		call	RandomRange
- 000000FA  83 C0 01			add		eax, R_MIN			;EAX contains 'r'.
+ 00000117  E8 00000000 E		call	RandomRange
+ 0000011C  83 C0 01			add		eax, R_MIN			;EAX contains 'r'.
 
- 000000FD  8B 7D 08			mov		edi, [ebp + 8]
- 00000100  89 07			mov		[edi], eax			;Save 'r'.
+ 0000011F  8B 7D 08			mov		edi, [ebp + 8]
+ 00000122  89 07			mov		[edi], eax			;Save 'r'.
 
- 00000102			printR:
+ 00000124			printR:
 					mWriteStr rStr
- 00000102  52		     1		push	edx
- 00000103  BA 000000E5 R     1		mov		edx, OFFSET rStr
- 00000108  E8 00000000 E     1		call	WriteString
- 0000010D  5A		     1		pop		edx
- 0000010E  E8 00000000 E		call	WriteDec
- 00000113  E8 00000000 E		call	CrLf
- 00000118  E8 00000000 E		call	CrLf
+ 00000124  52		     1		push	edx
+ 00000125  BA 000000E5 R     1		mov		edx, OFFSET rStr
+ 0000012A  E8 00000000 E     1		call	WriteString
+ 0000012F  5A		     1		pop		edx
+ 00000130  E8 00000000 E		call	WriteDec
+ 00000135  E8 00000000 E		call	CrLf
+ 0000013A  E8 00000000 E		call	CrLf
 
- 0000011D  5D				pop		ebp
- 0000011E  C2 0008			ret 8
+ 0000013F  5D				pop		ebp
+ 00000140  C2 0008			ret 8
 					
- 00000121			ShowProblem ENDP
+ 00000143			ShowProblem ENDP
 
 
 				;--------------------------------------------------
- 00000121			GetData PROC
+ 00000143			GetData PROC
 				;
 				; Prompts user to enter their answer to the nCr
 				; problem. Validates the entered string into
@@ -324,52 +362,52 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				; Receives the stack parameters (@a).
 				;	@a: Address to store user's answer.
 				;--------------------------------------------------
- 00000121  55				push	ebp
- 00000122  8B EC			mov		ebp, esp
- 00000124  8B 7D 08			mov		edi, [ebp + 8]		;EDI contains destination address.
+ 00000143  55				push	ebp
+ 00000144  8B EC			mov		ebp, esp
+ 00000146  8B 7D 08			mov		edi, [ebp + 8]		;EDI contains destination address.
 
 					mWriteStr problemPrompt
- 00000127  52		     1		push	edx
- 00000128  BA 00000111 R     1		mov		edx, OFFSET problemPrompt
- 0000012D  E8 00000000 E     1		call	WriteString
- 00000132  5A		     1		pop		edx
+ 00000149  52		     1		push	edx
+ 0000014A  BA 00000111 R     1		mov		edx, OFFSET problemPrompt
+ 0000014F  E8 00000000 E     1		call	WriteString
+ 00000154  5A		     1		pop		edx
 
- 00000133			getInput:
- 00000133  BA 00000130 R		mov		edx, OFFSET usrAnswerStr
- 00000138  B9 0000000A			mov		ecx, INPUT_BUFFER_SIZE - 1
- 0000013D  E8 00000000 E		call	ReadString			;usrAnswerStr contains entered string.
+ 00000155			getInput:
+ 00000155  BA 00000130 R		mov		edx, OFFSET usrAnswerStr
+ 0000015A  B9 0000000A			mov		ecx, INPUT_BUFFER_SIZE - 1
+ 0000015F  E8 00000000 E		call	ReadString			;usrAnswerStr contains entered string.
 
- 00000142  68 00000130 R		push	OFFSET usrAnswerStr
- 00000147  50				push	eax					;Size of input string.
- 00000148  E8 00000025			call	IsNumeric
+ 00000164  68 00000130 R		push	OFFSET usrAnswerStr
+ 00000169  50				push	eax					;Size of input string.
+ 0000016A  E8 00000025			call	IsNumeric
 
- 0000014D  74 13			jz		convertInput			
+ 0000016F  74 13			jz		convertInput			
 
 					;User entered a non-numeric string. Print error, and try again.
- 0000014F  E8 00000000 E		call	CrLf
+ 00000171  E8 00000000 E		call	CrLf
 					mWriteStr	inputErrMsg
- 00000154  52		     1		push	edx
- 00000155  BA 0000013B R     1		mov		edx, OFFSET inputErrMsg
- 0000015A  E8 00000000 E     1		call	WriteString
- 0000015F  5A		     1		pop		edx
- 00000160  EB D1			jmp		getInput
+ 00000176  52		     1		push	edx
+ 00000177  BA 0000013B R     1		mov		edx, OFFSET inputErrMsg
+ 0000017C  E8 00000000 E     1		call	WriteString
+ 00000181  5A		     1		pop		edx
+ 00000182  EB D1			jmp		getInput
 
- 00000162			convertInput:	
+ 00000184			convertInput:	
 					
- 00000162  68 00000130 R		push	OFFSET usrAnswerStr
- 00000167  50				push	eax					;Number of digits in entered string.
- 00000168  57				push	edi					;Output variable.
- 00000169  E8 00000036			call	StringToNumber
+ 00000184  68 00000130 R		push	OFFSET usrAnswerStr
+ 00000189  50				push	eax					;Number of digits in entered string.
+ 0000018A  57				push	edi					;Output variable.
+ 0000018B  E8 00000036			call	StringToNumber
 
- 0000016E  5D				pop	ebp
+ 00000190  5D				pop	ebp
 
- 0000016F  C2 0004			ret 4
+ 00000191  C2 0004			ret 4
 
- 00000172			GetData ENDP
+ 00000194			GetData ENDP
 
 
 				;--------------------------------------------------
- 00000172			IsNumeric PROC
+ 00000194			IsNumeric PROC
 				;
 				; Checks if a string represents a valid POSITIVE 
 				; integer.
@@ -381,53 +419,53 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				; Returns: ZF = 1 if the string represents a valid
 				; integer; else, ZF = 0.
 				;--------------------------------------------------
- 00000172  56				push	esi
- 00000173  51				push	ecx
- 00000174  50				push	eax
- 00000175  53				push	ebx
- 00000176  55				push	ebp
- 00000177  8B EC			mov		ebp, esp
+ 00000194  56				push	esi
+ 00000195  51				push	ecx
+ 00000196  50				push	eax
+ 00000197  53				push	ebx
+ 00000198  55				push	ebp
+ 00000199  8B EC			mov		ebp, esp
 
- 00000179  8B 75 1C			mov		esi, [ebp + 28]		;ESI contains address of string.
- 0000017C  8B 4D 18			mov		ecx, [ebp + 24]		;ECX contains size of string.
- 0000017F  FC				cld
+ 0000019B  8B 75 1C			mov		esi, [ebp + 28]		;ESI contains address of string.
+ 0000019E  8B 4D 18			mov		ecx, [ebp + 24]		;ECX contains size of string.
+ 000001A1  FC				cld
 
 					;Check if string is empty. If yes, set ZF = 0 and finish.
- 00000180  83 F9 00			cmp		ecx, 0
- 00000183  74 12			je		emptyStr
+ 000001A2  83 F9 00			cmp		ecx, 0
+ 000001A5  74 12			je		emptyStr
 
- 00000185			nextDigit:
- 00000185  AC				lodsb						;AL contains next character.
+ 000001A7			nextDigit:
+ 000001A7  AC				lodsb						;AL contains next character.
 
 					;Valid numeric characters will have ASCII codes in [48, 57].
- 00000186  3C 30			cmp		al, 48
- 00000188  7C 12			jl		finished			;ZF = 0
- 0000018A  3C 39			cmp		al, 57
- 0000018C  7F 0E			jg		finished			;ZF = 0
+ 000001A8  3C 30			cmp		al, 48
+ 000001AA  7C 12			jl		finished			;ZF = 0
+ 000001AC  3C 39			cmp		al, 57
+ 000001AE  7F 0E			jg		finished			;ZF = 0
 
- 0000018E  E2 F5			loop	nextDigit
+ 000001B0  E2 F5			loop	nextDigit
 
- 00000190  33 C0			xor		eax, eax
- 00000192  83 F8 00			cmp		eax, 0				;Set ZF = 1, since string is valid integer representation.
- 00000195  EB 05			jmp		finished
+ 000001B2  33 C0			xor		eax, eax
+ 000001B4  83 F8 00			cmp		eax, 0				;Set ZF = 1, since string is valid integer representation.
+ 000001B7  EB 05			jmp		finished
 
- 00000197			emptyStr:	;String was empty. Set ZF = 0, since this isn't valid numeric representation.
- 00000197  33 C0			xor		eax, eax
- 00000199  83 F8 01			cmp		eax, 1
+ 000001B9			emptyStr:	;String was empty. Set ZF = 0, since this isn't valid numeric representation.
+ 000001B9  33 C0			xor		eax, eax
+ 000001BB  83 F8 01			cmp		eax, 1
 
- 0000019C			finished:
- 0000019C  5D				pop		ebp
- 0000019D  5B				pop		ebx
- 0000019E  58				pop		eax
- 0000019F  59				pop		ecx
- 000001A0  5E				pop		esi
+ 000001BE			finished:
+ 000001BE  5D				pop		ebp
+ 000001BF  5B				pop		ebx
+ 000001C0  58				pop		eax
+ 000001C1  59				pop		ecx
+ 000001C2  5E				pop		esi
 
- 000001A1  C2 0008			ret		8
+ 000001C3  C2 0008			ret		8
 
- 000001A4			IsNumeric ENDP
+ 000001C6			IsNumeric ENDP
 
 				;--------------------------------------------------
- 000001A4			StringToNumber PROC
+ 000001C6			StringToNumber PROC
 				;
 				; Generates the numeric value of a string representation
 				; of a positive integer.
@@ -438,50 +476,50 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				;	@o: output variable to store numeric value.
 				;
 				;--------------------------------------------------
- 000001A4  50				push	eax
- 000001A5  56				push	esi
- 000001A6  51				push	ecx
- 000001A7  53				push	ebx
- 000001A8  55				push	ebp
+ 000001C6  50				push	eax
+ 000001C7  56				push	esi
+ 000001C8  51				push	ecx
+ 000001C9  53				push	ebx
+ 000001CA  55				push	ebp
 
- 000001A9  8B EC			mov		ebp, esp
+ 000001CB  8B EC			mov		ebp, esp
 
- 000001AB  8B 75 20			mov		esi, [ebp + 32]		;Load address of string.
- 000001AE  8B 4D 1C			mov		ecx, [ebp + 28]		;Load number of characters.
- 000001B1  8B 7D 18			mov		edi, [ebp + 24]		;Load output variable.
+ 000001CD  8B 75 20			mov		esi, [ebp + 32]		;Load address of string.
+ 000001D0  8B 4D 1C			mov		ecx, [ebp + 28]		;Load number of characters.
+ 000001D3  8B 7D 18			mov		edi, [ebp + 24]		;Load output variable.
 
- 000001B4  33 C0			xor		eax, eax			;Holds numeric value.
+ 000001D6  33 C0			xor		eax, eax			;Holds numeric value.
 
- 000001B6			convertChar:
- 000001B6  BB 0000000A			mov		ebx, 10
- 000001BB  F7 E3			mul		ebx
+ 000001D8			convertChar:
+ 000001D8  BB 0000000A			mov		ebx, 10
+ 000001DD  F7 E3			mul		ebx
 
- 000001BD  50				push	eax					;Save current value before loading next byte.
- 000001BE  AC				lodsb
+ 000001DF  50				push	eax					;Save current value before loading next byte.
+ 000001E0  AC				lodsb
 
- 000001BF  0F B6 D8			movzx	ebx, al
- 000001C2  83 EB 30			sub		ebx, 48				;Convert char to numeric value.
+ 000001E1  0F B6 D8			movzx	ebx, al
+ 000001E4  83 EB 30			sub		ebx, 48				;Convert char to numeric value.
 
- 000001C5  58				pop		eax
- 000001C6  03 C3			add		eax, ebx			;Add digit to accumulating value.
+ 000001E7  58				pop		eax
+ 000001E8  03 C3			add		eax, ebx			;Add digit to accumulating value.
 
- 000001C8  E2 EC			loop	convertChar
+ 000001EA  E2 EC			loop	convertChar
 
- 000001CA  89 07			mov		[edi], eax			;Save numeric value to output variable.
+ 000001EC  89 07			mov		[edi], eax			;Save numeric value to output variable.
 
- 000001CC  5D				pop		ebp
- 000001CD  5B				pop		ebx
- 000001CE  59				pop		ecx
- 000001CF  5E				pop		esi
- 000001D0  58				pop		eax
+ 000001EE  5D				pop		ebp
+ 000001EF  5B				pop		ebx
+ 000001F0  59				pop		ecx
+ 000001F1  5E				pop		esi
+ 000001F2  58				pop		eax
 
- 000001D1  C2 000C			ret 12
+ 000001F3  C2 000C			ret 12
 
- 000001D4			StringToNumber ENDP
+ 000001F6			StringToNumber ENDP
 
 
 				;--------------------------------------------------
- 000001D4			Combinations PROC
+ 000001F6			Combinations PROC
 				;
 				; Calculates the answer to an nCr problem, using the
 				; formula n!/(r!(n-r)!)
@@ -493,69 +531,69 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				;
 				;--------------------------------------------------
 
- 000001D4  60				pushad
- 000001D5  8B EC			mov		ebp, esp
+ 000001F6  60				pushad
+ 000001F7  8B EC			mov		ebp, esp
 
- 000001D7  8B 45 2C			mov		eax, [ebp + 44]		;Load n.
- 000001DA  8B 7D 24			mov		edi, [ebp + 36]		;Load address.
+ 000001F9  8B 45 2C			mov		eax, [ebp + 44]		;Load n.
+ 000001FC  8B 7D 24			mov		edi, [ebp + 36]		;Load address.
 
- 000001DD			nFac:
+ 000001FF			nFac:
 					;Calculate n!
- 000001DD  50				push	eax
- 000001DE  57				push	edi
- 000001DF  E8 0000003D			call	Factorial			
+ 000001FF  50				push	eax
+ 00000200  57				push	edi
+ 00000201  E8 0000003D			call	Factorial			
 
- 000001E4  8B 07			mov		eax, [edi]			;EAX contains n!
+ 00000206  8B 07			mov		eax, [edi]			;EAX contains n!
 
- 000001E6			rFac:
+ 00000208			rFac:
 					;Calculate r!
- 000001E6  B9 00000000			mov		ecx, 0
- 000001EB  89 0F			mov		[edi], ecx			;Reset for next factorial calculation.
- 000001ED  8B 5D 28			mov		ebx, [ebp + 40]		;Load r
+ 00000208  B9 00000000			mov		ecx, 0
+ 0000020D  89 0F			mov		[edi], ecx			;Reset for next factorial calculation.
+ 0000020F  8B 5D 28			mov		ebx, [ebp + 40]		;Load r
 
- 000001F0  53				push	ebx
- 000001F1  57				push	edi
- 000001F2  E8 0000002A			call	Factorial
+ 00000212  53				push	ebx
+ 00000213  57				push	edi
+ 00000214  E8 0000002A			call	Factorial
 
- 000001F7  8B 1F			mov		ebx, [edi]			;EBX contains r!
+ 00000219  8B 1F			mov		ebx, [edi]			;EBX contains r!
 
- 000001F9			nMinRFac:
+ 0000021B			nMinRFac:
 
 					;Calculate (n-r)!
- 000001F9  8B 4D 2C			mov		ecx, [ebp + 44]		;load n.
- 000001FC  8B 55 28			mov		edx, [ebp + 40]		;load r.
- 000001FF  2B CA			sub		ecx, edx			;ECX = (n-r)
+ 0000021B  8B 4D 2C			mov		ecx, [ebp + 44]		;load n.
+ 0000021E  8B 55 28			mov		edx, [ebp + 40]		;load r.
+ 00000221  2B CA			sub		ecx, edx			;ECX = (n-r)
 
- 00000201  BA 00000000			mov		edx, 0
- 00000206  89 17			mov		[edi], edx			;Reset for next factorial combination.
- 00000208  51				push	ecx
- 00000209  57				push	edi
- 0000020A  E8 00000012			call	Factorial			
+ 00000223  BA 00000000			mov		edx, 0
+ 00000228  89 17			mov		[edi], edx			;Reset for next factorial combination.
+ 0000022A  51				push	ecx
+ 0000022B  57				push	edi
+ 0000022C  E8 00000012			call	Factorial			
 
- 0000020F  8B 0F			mov		ecx, [edi]			;ECX = (n-r)!
+ 00000231  8B 0F			mov		ecx, [edi]			;ECX = (n-r)!
 
- 00000211			finalAnswer:
+ 00000233			finalAnswer:
 
 					;Calculate n!/r!(n-r)!
 
- 00000211  50				push	eax					;Save n!
- 00000212  8B C3			mov		eax, ebx			;EAX = r!
- 00000214  F7 E1			mul		ecx					;ECX = (n-r)!
+ 00000233  50				push	eax					;Save n!
+ 00000234  8B C3			mov		eax, ebx			;EAX = r!
+ 00000236  F7 E1			mul		ecx					;ECX = (n-r)!
 
- 00000216  8B D8			mov		ebx, eax			;EBX = r!(n-r)!
- 00000218  58				pop		eax					;restore n!
+ 00000238  8B D8			mov		ebx, eax			;EBX = r!(n-r)!
+ 0000023A  58				pop		eax					;restore n!
 
- 00000219  F7 F3			div		ebx					
+ 0000023B  F7 F3			div		ebx					
 					;mov		edi, [ebp + 36]		;Load output address.
- 0000021B  89 07			mov		[edi], eax			;Store answer
+ 0000023D  89 07			mov		[edi], eax			;Store answer
 
- 0000021D  61				popad
+ 0000023F  61				popad
 
- 0000021E  C2 000C			ret 12
- 00000221			Combinations ENDP
+ 00000240  C2 000C			ret 12
+ 00000243			Combinations ENDP
 
 				;--------------------------------------------------
- 00000221			Factorial PROC
+ 00000243			Factorial PROC
 				;
 				; Calculates the factorial of an integer, n.
 				;
@@ -563,49 +601,49 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				;	n: Number to compute factorial of.
 				;	@answer: Address to store answer.
 				;--------------------------------------------------
- 00000221  50				push	eax
- 00000222  53				push	ebx
- 00000223  55				push	ebp
- 00000224  8B EC			mov		ebp, esp
+ 00000243  50				push	eax
+ 00000244  53				push	ebx
+ 00000245  55				push	ebp
+ 00000246  8B EC			mov		ebp, esp
 
- 00000226  8B 5D 14			mov		ebx, [ebp + 20]		;Load n.
- 00000229  8B 7D 10			mov		edi, [ebp + 16]		;Load output address.
+ 00000248  8B 5D 14			mov		ebx, [ebp + 20]		;Load n.
+ 0000024B  8B 7D 10			mov		edi, [ebp + 16]		;Load output address.
 
- 0000022C  83 FB 00			cmp		ebx, 0				;Base case.
- 0000022F  74 1B			je		base
+ 0000024E  83 FB 00			cmp		ebx, 0				;Base case.
+ 00000251  74 1B			je		base
 
- 00000231  83 FB 01			cmp		ebx, 1				;Base case.
- 00000234  74 16			je		base
+ 00000253  83 FB 01			cmp		ebx, 1				;Base case.
+ 00000256  74 16			je		base
 
- 00000236			recurse:
+ 00000258			recurse:
 
- 00000236  4B				dec		ebx					;Recursive call with n-1.
- 00000237  53				push	ebx
- 00000238  57				push	edi
- 00000239  E8 FFFFFFE3			call	Factorial
+ 00000258  4B				dec		ebx					;Recursive call with n-1.
+ 00000259  53				push	ebx
+ 0000025A  57				push	edi
+ 0000025B  E8 FFFFFFE3			call	Factorial
 
- 0000023E  8B 5D 14			mov		ebx, [ebp + 20]		;Load this stack frame's value of n.
- 00000241  8B 7D 10			mov		edi, [ebp + 16]		;This is (n-1)!
+ 00000260  8B 5D 14			mov		ebx, [ebp + 20]		;Load this stack frame's value of n.
+ 00000263  8B 7D 10			mov		edi, [ebp + 16]		;This is (n-1)!
 
- 00000244  8B 07			mov		eax, [edi]
- 00000246  F7 E3			mul		ebx					;n * (n-1)!
- 00000248  89 07			mov		[edi], eax
- 0000024A  EB 02			jmp		quit
+ 00000266  8B 07			mov		eax, [edi]
+ 00000268  F7 E3			mul		ebx					;n * (n-1)!
+ 0000026A  89 07			mov		[edi], eax
+ 0000026C  EB 02			jmp		quit
 
- 0000024C			base:
- 0000024C  FF 07			inc DWORD PTR[edi]			;Needed in case N starts off as zero. Otherwise, exits when N reaches 1.
+ 0000026E			base:
+ 0000026E  FF 07			inc DWORD PTR[edi]			;Needed in case N starts off as zero. Otherwise, exits when N reaches 1.
 
- 0000024E			quit:
- 0000024E  5D				pop		ebp
- 0000024F  5B				pop		ebx
- 00000250  58				pop		eax
+ 00000270			quit:
+ 00000270  5D				pop		ebp
+ 00000271  5B				pop		ebx
+ 00000272  58				pop		eax
 
- 00000251  C2 0008			ret 8
+ 00000273  C2 0008			ret 8
 
- 00000254			Factorial ENDP
+ 00000276			Factorial ENDP
 
 				;--------------------------------------------------
- 00000254			ShowResults PROC
+ 00000276			ShowResults PROC
 				;
 				; Displays the answer to the nCr problem, and determines
 				; if the user answered correctly.
@@ -616,73 +654,138 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
 				;	answer: Correct answer to the nCr problem.
 				;	guess: User-entered answer to the problem.
 				;--------------------------------------------------
- 00000254  55				push	ebp
- 00000255  8B EC			mov		ebp, esp
+ 00000276  55				push	ebp
+ 00000277  8B EC			mov		ebp, esp
 
 					mWriteStr	ansStr1
- 00000257  52		     1		push	edx
- 00000258  BA 0000016A R     1		mov		edx, OFFSET ansStr1
- 0000025D  E8 00000000 E     1		call	WriteString
- 00000262  5A		     1		pop		edx
- 00000263  8B 45 0C			mov		eax, [ebp + 12]		;Load correct answer.
- 00000266  E8 00000000 E		call	WriteDec
+ 00000279  52		     1		push	edx
+ 0000027A  BA 0000016A R     1		mov		edx, OFFSET ansStr1
+ 0000027F  E8 00000000 E     1		call	WriteString
+ 00000284  5A		     1		pop		edx
+ 00000285  8B 45 0C			mov		eax, [ebp + 12]		;Load correct answer.
+ 00000288  E8 00000000 E		call	WriteDec
 
 					mWriteStr	ansStr2
- 0000026B  52		     1		push	edx
- 0000026C  BA 00000175 R     1		mov		edx, OFFSET ansStr2
- 00000271  E8 00000000 E     1		call	WriteString
- 00000276  5A		     1		pop		edx
- 00000277  8B 45 10			mov		eax, [ebp + 16]		;Load r.
- 0000027A  E8 00000000 E		call	WriteDec
+ 0000028D  52		     1		push	edx
+ 0000028E  BA 00000175 R     1		mov		edx, OFFSET ansStr2
+ 00000293  E8 00000000 E     1		call	WriteString
+ 00000298  5A		     1		pop		edx
+ 00000299  8B 45 10			mov		eax, [ebp + 16]		;Load r.
+ 0000029C  E8 00000000 E		call	WriteDec
 
 					mWriteStr	ansStr3
- 0000027F  52		     1		push	edx
- 00000280  BA 00000187 R     1		mov		edx, OFFSET ansStr3
- 00000285  E8 00000000 E     1		call	WriteString
- 0000028A  5A		     1		pop		edx
- 0000028B  8B 45 14			mov		eax, [ebp + 20]		;Load n.
- 0000028E  E8 00000000 E		call	WriteDec
+ 000002A1  52		     1		push	edx
+ 000002A2  BA 00000187 R     1		mov		edx, OFFSET ansStr3
+ 000002A7  E8 00000000 E     1		call	WriteString
+ 000002AC  5A		     1		pop		edx
+ 000002AD  8B 45 14			mov		eax, [ebp + 20]		;Load n.
+ 000002B0  E8 00000000 E		call	WriteDec
 					mWriteStr	ansStr4
- 00000293  52		     1		push	edx
- 00000294  BA 0000019D R     1		mov		edx, OFFSET ansStr4
- 00000299  E8 00000000 E     1		call	WriteString
- 0000029E  5A		     1		pop		edx
+ 000002B5  52		     1		push	edx
+ 000002B6  BA 0000019D R     1		mov		edx, OFFSET ansStr4
+ 000002BB  E8 00000000 E     1		call	WriteString
+ 000002C0  5A		     1		pop		edx
 
- 0000029F			validate:
+ 000002C1			validate:
 					
- 0000029F  8B 45 0C			mov		eax, [ebp + 12]    ;Correct answer.
- 000002A2  8B 5D 08			mov		ebx, [ebp + 8]	   ;User's answer.
+ 000002C1  8B 45 0C			mov		eax, [ebp + 12]    ;Correct answer.
+ 000002C4  8B 5D 08			mov		ebx, [ebp + 8]	   ;User's answer.
 
- 000002A5  3B C3			cmp		eax, ebx		   ;Compare user answer to correct answer.
- 000002A7  74 13			je		correct
+ 000002C7  3B C3			cmp		eax, ebx		   ;Compare user answer to correct answer.
+ 000002C9  74 13			je		correct
 
- 000002A9  E8 00000000 E		call	CrLf
+ 000002CB  E8 00000000 E		call	CrLf
 					mWriteStr incorrectStr
- 000002AE  52		     1		push	edx
- 000002AF  BA 0000019F R     1		mov		edx, OFFSET incorrectStr
- 000002B4  E8 00000000 E     1		call	WriteString
- 000002B9  5A		     1		pop		edx
- 000002BA  EB 11			jmp		return
+ 000002D0  52		     1		push	edx
+ 000002D1  BA 0000019F R     1		mov		edx, OFFSET incorrectStr
+ 000002D6  E8 00000000 E     1		call	WriteString
+ 000002DB  5A		     1		pop		edx
+ 000002DC  EB 11			jmp		return
 
- 000002BC			correct:
- 000002BC  E8 00000000 E		call	CrLf
+ 000002DE			correct:
+ 000002DE  E8 00000000 E		call	CrLf
 					mWriteStr correctStr
- 000002C1  52		     1		push	edx
- 000002C2  BA 000001CE R     1		mov		edx, OFFSET correctStr
- 000002C7  E8 00000000 E     1		call	WriteString
- 000002CC  5A		     1		pop		edx
+ 000002E3  52		     1		push	edx
+ 000002E4  BA 000001CE R     1		mov		edx, OFFSET correctStr
+ 000002E9  E8 00000000 E     1		call	WriteString
+ 000002EE  5A		     1		pop		edx
 
- 000002CD			return:
+ 000002EF			return:
 
- 000002CD  E8 00000000 E		call	CrLf
- 000002D2  E8 00000000 E		call	CrLf
- 000002D7  5D				pop		ebp
- 000002D8  C2 0010			ret 16
+ 000002EF  E8 00000000 E		call	CrLf
+ 000002F4  E8 00000000 E		call	CrLf
+ 000002F9  5D				pop		ebp
+ 000002FA  C2 0010			ret 16
 
- 000002DB			ShowResults ENDP
+ 000002FD			ShowResults ENDP
 
+				;--------------------------------------------------
+ 000002FD			AskPlayAgain PROC
+				;
+				; Asks user if they would like to solve another
+				; problem.
+				;
+				; Returns: ZF = 1 if user indicates they want another
+				; problem; else, ZF = 0.
+				;
+				;
+				;--------------------------------------------------
+ 000002FD  50				push	eax
+ 000002FE  51				push	ecx
+ 000002FF  52				push	edx
+					mWriteStr playAgainStr
+ 00000300  52		     1		push	edx
+ 00000301  BA 000001F1 R     1		mov		edx, OFFSET playAgainStr
+ 00000306  E8 00000000 E     1		call	WriteString
+ 0000030B  5A		     1		pop		edx
+
+ 0000030C  33 D2			xor		edx, edx
+ 0000030E  BA 0000025B R		mov		edx, OFFSET playAgainBuffer
+ 00000313  B9 00000001			mov		ecx, 1
+ 00000318  E8 00000000 E		call	ReadChar			;User will enter 'Y' or 'N'. Case insensitive.
+
+					;Check user's input.
+ 0000031D  3C 79			cmp		al, 'y'				;Entered 'y'.
+ 0000031F  74 2E			je		onDone
+ 00000321  3C 59			cmp		al, 'Y'
+ 00000323  74 2A			je		onDone				;Entered 'Y'.
+ 00000325  3C 6E			cmp		al, 'n'				;Entered 'n'.
+ 00000327  74 1C			je		nEntered
+ 00000329  3C 4E			cmp		al, 'N'				;Entered 'N'.
+ 0000032B  74 18			je		nEntered
+					
+					;Something other than 'y' or 'n' entered. Interpret as intention to exit.
+ 0000032D  E8 00000000 E		call	CrLf
+					mWriteStr playAgainErr
+ 00000332  52		     1		push	edx
+ 00000333  BA 00000217 R     1		mov		edx, OFFSET playAgainErr
+ 00000338  E8 00000000 E     1		call	WriteString
+ 0000033D  5A		     1		pop		edx
+ 0000033E  E8 00000000 E		call	CrLf
+ 00000343  EB 0A			jmp		onDone
+
+ 00000345			nEntered:							;Clear ZF.
+ 00000345  B8 00000000			mov		eax, 0
+ 0000034A  83 F8 01			cmp		eax, 1
+ 0000034D  EB 00			jmp		onDone
+
+ 0000034F			onDone:								;Need to reset variables for next round.
+ 0000034F  BF 00000264 R		mov		edi, OFFSET usrAnswer
+ 00000354  B8 00000000			mov		eax, 0
+ 00000359  89 07			mov		[edi], eax				;Clear user's last answer.
+
+ 0000035B  BF 00000268 R		mov		edi, OFFSET theAnswer	;Clear last problem's answer.
+ 00000360  89 07			mov		[edi], eax
+
+ 00000362  5A				pop		edx
+ 00000363  59				pop		ecx
+ 00000364  58				pop		eax
+
+ 00000365  C3				ret
+
+ 00000366			AskPlayAgain ENDP
 				END main
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/07/18 20:16:20
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
 Program 6      (program6.asm				     Symbols 2 - 1
 
 
@@ -783,22 +886,25 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000201 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000002DB Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000026C Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000366 Para	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
 
                 N a m e                 Type     Value    Attr
 
+AskPlayAgain . . . . . . . . . .	P Near	 000002FD _TEXT	Length= 00000069 Public STDCALL
+  nEntered . . . . . . . . . . .	L Near	 00000345 _TEXT	
+  onDone . . . . . . . . . . . .	L Near	 0000034F _TEXT	
 CloseFile  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CloseHandle  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Clrscr . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-Combinations . . . . . . . . . .	P Near	 000001D4 _TEXT	Length= 0000004D Public STDCALL
-  nFac . . . . . . . . . . . . .	L Near	 000001DD _TEXT	
-  rFac . . . . . . . . . . . . .	L Near	 000001E6 _TEXT	
-  nMinRFac . . . . . . . . . . .	L Near	 000001F9 _TEXT	
-  finalAnswer  . . . . . . . . .	L Near	 00000211 _TEXT	
+Combinations . . . . . . . . . .	P Near	 000001F6 _TEXT	Length= 0000004D Public STDCALL
+  nFac . . . . . . . . . . . . .	L Near	 000001FF _TEXT	
+  rFac . . . . . . . . . . . . .	L Near	 00000208 _TEXT	
+  nMinRFac . . . . . . . . . . .	L Near	 0000021B _TEXT	
+  finalAnswer  . . . . . . . . .	L Near	 00000233 _TEXT	
 CreateFileA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 CreateOutputFile . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Crlf . . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -806,10 +912,10 @@ Delay  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 DumpMem  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 DumpRegs . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-Factorial  . . . . . . . . . . .	P Near	 00000221 _TEXT	Length= 00000033 Public STDCALL
-  recurse  . . . . . . . . . . .	L Near	 00000236 _TEXT	
-  base . . . . . . . . . . . . .	L Near	 0000024C _TEXT	
-  quit . . . . . . . . . . . . .	L Near	 0000024E _TEXT	
+Factorial  . . . . . . . . . . .	P Near	 00000243 _TEXT	Length= 00000033 Public STDCALL
+  recurse  . . . . . . . . . . .	L Near	 00000258 _TEXT	
+  base . . . . . . . . . . . . .	L Near	 0000026E _TEXT	
+  quit . . . . . . . . . . . . .	L Near	 00000270 _TEXT	
 FileTimeToDosDateTime  . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FileTimeToSystemTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 FlushConsoleInputBuffer  . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -820,9 +926,9 @@ GetConsoleCP . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 GetConsoleCursorInfo . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleMode . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetConsoleScreenBufferInfo . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-GetData  . . . . . . . . . . . .	P Near	 00000121 _TEXT	Length= 00000051 Public STDCALL
-  getInput . . . . . . . . . . .	L Near	 00000133 _TEXT	
-  convertInput . . . . . . . . .	L Near	 00000162 _TEXT	
+GetData  . . . . . . . . . . . .	P Near	 00000143 _TEXT	Length= 00000051 Public STDCALL
+  getInput . . . . . . . . . . .	L Near	 00000155 _TEXT	
+  convertInput . . . . . . . . .	L Near	 00000184 _TEXT	
 GetDateTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetFileTime  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 GetKeyState  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -842,12 +948,12 @@ HeapCreate . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 HeapDestroy  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapFree . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 HeapSize . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-Introduction . . . . . . . . . .	P Near	 00000062 _TEXT	Length= 00000060 Public STDCALL
+Introduction . . . . . . . . . .	P Near	 0000007F _TEXT	Length= 0000005B Public STDCALL
 IsDigit  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-IsNumeric  . . . . . . . . . . .	P Near	 00000172 _TEXT	Length= 00000032 Public STDCALL
-  nextDigit  . . . . . . . . . .	L Near	 00000185 _TEXT	
-  emptyStr . . . . . . . . . . .	L Near	 00000197 _TEXT	
-  finished . . . . . . . . . . .	L Near	 0000019C _TEXT	
+IsNumeric  . . . . . . . . . . .	P Near	 00000194 _TEXT	Length= 00000032 Public STDCALL
+  nextDigit  . . . . . . . . . .	L Near	 000001A7 _TEXT	
+  emptyStr . . . . . . . . . . .	L Near	 000001B9 _TEXT	
+  finished . . . . . . . . . . .	L Near	 000001BE _TEXT	
 LocalFree  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MessageBoxA  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 MsgBoxAsk  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -882,15 +988,15 @@ SetFilePointer . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 SetLocalTime . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 SetTextColor . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 ShowFPUStack . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ShowProblem  . . . . . . . . . .	P Near	 000000C2 _TEXT	Length= 0000005F Public STDCALL
-  genN . . . . . . . . . . . . .	L Near	 000000C5 _TEXT	
-  printN . . . . . . . . . . . .	L Near	 000000DB _TEXT	
-  genR . . . . . . . . . . . . .	L Near	 000000F1 _TEXT	
-  printR . . . . . . . . . . . .	L Near	 00000102 _TEXT	
-ShowResults  . . . . . . . . . .	P Near	 00000254 _TEXT	Length= 00000087 Public STDCALL
-  validate . . . . . . . . . . .	L Near	 0000029F _TEXT	
-  correct  . . . . . . . . . . .	L Near	 000002BC _TEXT	
-  return . . . . . . . . . . . .	L Near	 000002CD _TEXT	
+ShowProblem  . . . . . . . . . .	P Near	 000000DA _TEXT	Length= 00000069 Public STDCALL
+  genN . . . . . . . . . . . . .	L Near	 000000DD _TEXT	
+  printN . . . . . . . . . . . .	L Near	 000000FD _TEXT	
+  genR . . . . . . . . . . . . .	L Near	 00000113 _TEXT	
+  printR . . . . . . . . . . . .	L Near	 00000124 _TEXT	
+ShowResults  . . . . . . . . . .	P Near	 00000276 _TEXT	Length= 00000087 Public STDCALL
+  validate . . . . . . . . . . .	L Near	 000002C1 _TEXT	
+  correct  . . . . . . . . . . .	L Near	 000002DE _TEXT	
+  return . . . . . . . . . . . .	L Near	 000002EF _TEXT	
 Sleep  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 StrLength  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_compare  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -898,8 +1004,8 @@ Str_copy . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 Str_length . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_trim . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 Str_ucase  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-StringToNumber . . . . . . . . .	P Near	 000001A4 _TEXT	Length= 00000030 Public STDCALL
-  convertChar  . . . . . . . . .	L Near	 000001B6 _TEXT	
+StringToNumber . . . . . . . . .	P Near	 000001C6 _TEXT	Length= 00000030 Public STDCALL
+  convertChar  . . . . . . . . .	L Near	 000001D8 _TEXT	
 SystemTimeToFileTime . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WaitMsg  . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteBinB  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -919,7 +1025,8 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000062 Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000007F Public STDCALL
+  play . . . . . . . . . . . . .	L Near	 0000000A _TEXT	
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -1152,6 +1259,7 @@ brown  . . . . . . . . . . . . .	Number	 00000006h
 correctStr . . . . . . . . . . .	Byte	 000001CE _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
+goodbyeStr . . . . . . . . . . .	Byte	 00000252 _DATA	
 gray . . . . . . . . . . . . . .	Number	 00000008h   
 green  . . . . . . . . . . . . .	Number	 00000002h   
 incorrectStr . . . . . . . . . .	Byte	 0000019F _DATA	
@@ -1168,15 +1276,18 @@ lightRed . . . . . . . . . . . .	Number	 0000000Ch
 magenta  . . . . . . . . . . . .	Number	 00000005h   
 myName . . . . . . . . . . . . .	Byte	 00000013 _DATA	
 nStr . . . . . . . . . . . . . .	Byte	 000000C5 _DATA	
-nVal . . . . . . . . . . . . . .	DWord	 000001F1 _DATA	
+nVal . . . . . . . . . . . . . .	DWord	 0000025C _DATA	
+playAgainBuffer  . . . . . . . .	Byte	 0000025B _DATA	
+playAgainErr . . . . . . . . . .	Byte	 00000217 _DATA	
+playAgainStr . . . . . . . . . .	Byte	 000001F1 _DATA	
 problemPrompt  . . . . . . . . .	Byte	 00000111 _DATA	
 programName  . . . . . . . . . .	Byte	 00000000 _DATA	
 rStr . . . . . . . . . . . . . .	Byte	 000000E5 _DATA	
-rVal . . . . . . . . . . . . . .	DWord	 000001F5 _DATA	
+rVal . . . . . . . . . . . . . .	DWord	 00000260 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-theAnswer  . . . . . . . . . . .	DWord	 000001FD _DATA	
+theAnswer  . . . . . . . . . . .	DWord	 00000268 _DATA	
 usrAnswerStr . . . . . . . . . .	Byte	 00000130 _DATA	
-usrAnswer  . . . . . . . . . . .	DWord	 000001F9 _DATA	
+usrAnswer  . . . . . . . . . . .	DWord	 00000264 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
