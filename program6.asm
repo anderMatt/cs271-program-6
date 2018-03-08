@@ -46,29 +46,23 @@ problemPrompt	BYTE	"How many ways can you choose? ",0
 usrAnswerStr	BYTE	INPUT_BUFFER_SIZE DUP(?)
 inputErrMsg		BYTE	"You must enter a positive integer! Try again: ",0
 
+ansStr1			BYTE	"There are ",0
+ansStr2			BYTE	" combinations of ",0
+ansStr3			BYTE	" items from a set of ",0
+ansStr4			BYTE	".",0
+
+incorrectStr	BYTE	"You need to hit the books and study some more!",0
+correctStr		BYTE	"Well done, you answered correctly!",0
+
 nVal			DWORD	?
 rVal			DWORD	?
 usrAnswer		DWORD	?
 
-FACTORIAL_TEST	DWORD 0
+theAnswer		DWORD 0
 
 
 .code
 main PROC
-
-;Testing combos
-	push	6
-	push	3
-	push	OFFSET FACTORIAL_TEST
-	call	Combinations
-
-	mov		eax, FACTORIAL_TEST
-	call	WriteDec
-	call	CrLf
-
-	
-;End testing combos
-
 
 	call	Randomize			;Seed random number generator.
 	call	Introduction
@@ -77,9 +71,21 @@ main PROC
 	push	OFFSET rVal
 	call	ShowProblem
 
+	push	nVal
+	push	rVal
+	push	OFFSET theAnswer
+	call	Combinations
+
 	push	OFFSET	usrAnswer
 	call	GetData
 	call	CrLf
+
+	;Report answer
+	push	nVal
+	push	rVal
+	push	theAnswer
+	push	usrAnswer
+	call	ShowResults
 
 
 	exit	; exit to operating system
@@ -447,5 +453,58 @@ quit:
 	ret 8
 
 Factorial ENDP
+
+;--------------------------------------------------
+ShowResults PROC
+;
+; Displays the answer to the nCr problem, and determines
+; if the user answered correctly.
+;
+; Accepts the stack parameters (n, r, answer, guess)
+;	n: The value of n used for the nCr problem.
+;	r: The value of r used for the nCr problem.
+;	answer: Correct answer to the nCr problem.
+;	guess: User-entered answer to the problem.
+;--------------------------------------------------
+	push	ebp
+	mov		ebp, esp
+
+	mWriteStr	ansStr1
+	mov		eax, [ebp + 12]		;Load correct answer.
+	call	WriteDec
+
+	mWriteStr	ansStr2
+	mov		eax, [ebp + 16]		;Load r.
+	call	WriteDec
+
+	mWriteStr	ansStr3
+	mov		eax, [ebp + 20]		;Load n.
+	call	WriteDec
+	mWriteStr	ansStr4
+
+validate:
+	
+	mov		eax, [ebp + 12]    ;Correct answer.
+	mov		ebx, [ebp + 8]	   ;User's answer.
+
+	cmp		eax, ebx		   ;Compare user answer to correct answer.
+	je		correct
+
+	call	CrLf
+	mWriteStr incorrectStr
+	jmp		return
+
+correct:
+	call	CrLf
+	mWriteStr correctStr
+
+return:
+
+	call	CrLf
+	call	CrLf
+	pop		ebp
+	ret 16
+
+ShowResults ENDP
 
 END main
