@@ -56,16 +56,18 @@ FACTORIAL_TEST	DWORD 0
 .code
 main PROC
 
-;-- Testing factorials.
-	push	12
+;Testing combos
+	push	6
+	push	3
 	push	OFFSET FACTORIAL_TEST
-	call	Factorial
+	call	Combinations
 
 	mov		eax, FACTORIAL_TEST
 	call	WriteDec
 	call	CrLf
 
-;-- End testing factorials.
+	
+;End testing combos
 
 
 	call	Randomize			;Seed random number generator.
@@ -339,7 +341,57 @@ Combinations PROC
 	mov		ebp, esp
 
 	mov		eax, [ebp + 44]		;Load n.
+	mov		edi, [ebp + 36]		;Load address.
+
+nFac:
+	;Calculate n!
+	push	eax
+	push	edi
+	call	Factorial			
+
+	mov		eax, [edi]			;EAX contains n!
+
+rFac:
+	;Calculate r!
+	mov		ecx, 0
+	mov		[edi], ecx			;Reset for next factorial calculation.
+	mov		ebx, [ebp + 40]		;Load r
+
+	push	ebx
+	push	edi
 	call	Factorial
+
+	mov		ebx, [edi]			;EBX contains r!
+
+nMinRFac:
+
+	;Calculate (n-r)!
+	mov		ecx, [ebp + 44]		;load n.
+	mov		edx, [ebp + 40]		;load r.
+	sub		ecx, edx			;ECX = (n-r)
+
+	mov		edx, 0
+	mov		[edi], edx			;Reset for next factorial combination.
+	push	ecx
+	push	edi
+	call	Factorial			
+
+	mov		ecx, [edi]			;ECX = (n-r)!
+
+finalAnswer:
+
+	;Calculate n!/r!(n-r)!
+
+	push	eax					;Save n!
+	mov		eax, ebx			;EAX = r!
+	mul		ecx					;ECX = (n-r)!
+
+	mov		ebx, eax			;EBX = r!(n-r)!
+	pop		eax					;restore n!
+
+	div		ebx					
+	;mov		edi, [ebp + 36]		;Load output address.
+	mov		[edi], eax			;Store answer
 
 	popad
 
@@ -355,36 +407,43 @@ Factorial PROC
 ;	n: Number to compute factorial of.
 ;	@answer: Address to store answer.
 ;--------------------------------------------------
+	push	eax
+	push	ebx
 	push	ebp
 	mov		ebp, esp
 
-	mov		ebx, [ebp + 12]		;Load n.
-	mov		edi, [ebp + 8]		;Load output address.
+	mov		ebx, [ebp + 20]		;Load n.
+	mov		edi, [ebp + 16]		;Load output address.
 
-	cmp		ebx, 0
+	cmp		ebx, 0				;Base case.
 	je		base
 
-	cmp		ebx, 1
+	cmp		ebx, 1				;Base case.
 	je		base
 
-	dec		ebx
+recurse:
+
+	dec		ebx					;Recursive call with n-1.
 	push	ebx
 	push	edi
 	call	Factorial
 
-	mov		ebx, [ebp + 12]
-	mov		edi, [ebp + 8]
+	mov		ebx, [ebp + 20]		;Load this stack frame's value of n.
+	mov		edi, [ebp + 16]		;This is (n-1)!
 
 	mov		eax, [edi]
-	mul		ebx
+	mul		ebx					;n * (n-1)!
 	mov		[edi], eax
 	jmp		quit
 
 base:
-	inc DWORD PTR[edi]
+	inc DWORD PTR[edi]			;Needed in case N starts off as zero. Otherwise, exits when N reaches 1.
 
 quit:
 	pop		ebp
+	pop		ebx
+	pop		eax
+
 	ret 8
 
 Factorial ENDP
