@@ -50,9 +50,23 @@ nVal			DWORD	?
 rVal			DWORD	?
 usrAnswer		DWORD	?
 
+FACTORIAL_TEST	DWORD 0
+
 
 .code
 main PROC
+
+;-- Testing factorials.
+	push	12
+	push	OFFSET FACTORIAL_TEST
+	call	Factorial
+
+	mov		eax, FACTORIAL_TEST
+	call	WriteDec
+	call	CrLf
+
+;-- End testing factorials.
+
 
 	call	Randomize			;Seed random number generator.
 	call	Introduction
@@ -306,5 +320,73 @@ convertChar:
 	ret 12
 
 StringToNumber ENDP
+
+
+;--------------------------------------------------
+Combinations PROC
+;
+; Calculates the answer to an nCr problem, using the
+; formula n!/(r!(n-r)!)
+;
+; Accepts the stack parameters(n, r, @answer)
+;	n: Value of n.
+;	r: Value of r.
+;	@answer: Address to store the answer.
+;
+;--------------------------------------------------
+
+	pushad
+	mov		ebp, esp
+
+	mov		eax, [ebp + 44]		;Load n.
+	call	Factorial
+
+	popad
+
+	ret 12
+Combinations ENDP
+
+;--------------------------------------------------
+Factorial PROC
+;
+; Calculates the factorial of an integer, n.
+;
+; Accepts the stack parameters (n, @answer)
+;	n: Number to compute factorial of.
+;	@answer: Address to store answer.
+;--------------------------------------------------
+	push	ebp
+	mov		ebp, esp
+
+	mov		ebx, [ebp + 12]		;Load n.
+	mov		edi, [ebp + 8]		;Load output address.
+
+	cmp		ebx, 0
+	je		base
+
+	cmp		ebx, 1
+	je		base
+
+	dec		ebx
+	push	ebx
+	push	edi
+	call	Factorial
+
+	mov		ebx, [ebp + 12]
+	mov		edi, [ebp + 8]
+
+	mov		eax, [edi]
+	mul		ebx
+	mov		[edi], eax
+	jmp		quit
+
+base:
+	inc DWORD PTR[edi]
+
+quit:
+	pop		ebp
+	ret 8
+
+Factorial ENDP
 
 END main
