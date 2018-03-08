@@ -1,11 +1,11 @@
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:23:24
 Program 6      (program6.asm				     Page 1 - 1
 
 
 				TITLE Program 6      (program6.asm)
 
 				; Author: Matthew Anderson			anderma8@oregonstate.edu
-				; Course: CS 271 - Program 6        Date: March 5, 2018
+				; Course: CS 271 - Program 6        Date: March 8, 2018
 				;
 				; Description: Presents the user with an nCr combinatorics problem,
 				;  and evaluates the entered answer. 'n' will be a random number in [3, 12],
@@ -208,16 +208,18 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
  0000000F  68 00000260 R		push	OFFSET rVal
  00000014  E8 000000C1			call	ShowProblem
 
+					;Calculate the answer.
  00000019  FF 35 0000025C R		push	nVal
  0000001F  FF 35 00000260 R		push	rVal
  00000025  68 00000268 R		push	OFFSET theAnswer
  0000002A  E8 000001C7			call	Combinations
 
+					;Get user's answer.
  0000002F  68 00000264 R		push	OFFSET	usrAnswer
  00000034  E8 0000010A			call	GetData
  00000039  E8 00000000 E		call	CrLf
 
-					;Report answer
+					;Report answer.
  0000003E  FF 35 0000025C R		push	nVal
  00000044  FF 35 00000260 R		push	rVal
  0000004A  FF 35 00000268 R		push	theAnswer
@@ -785,7 +787,7 @@ Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
 
  00000366			AskPlayAgain ENDP
 				END main
-Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:10:34
+Microsoft (R) Macro Assembler Version 14.12.25831.0	    03/08/18 18:23:24
 Program 6      (program6.asm				     Symbols 2 - 1
 
 

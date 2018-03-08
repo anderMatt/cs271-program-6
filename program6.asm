@@ -1,7 +1,7 @@
 TITLE Program 6      (program6.asm)
 
 ; Author: Matthew Anderson			anderma8@oregonstate.edu
-; Course: CS 271 - Program 6        Date: March 5, 2018
+; Course: CS 271 - Program 6        Date: March 8, 2018
 ;
 ; Description: Presents the user with an nCr combinatorics problem,
 ;  and evaluates the entered answer. 'n' will be a random number in [3, 12],
@@ -77,16 +77,18 @@ play:
 	push	OFFSET rVal
 	call	ShowProblem
 
+	;Calculate the answer.
 	push	nVal
 	push	rVal
 	push	OFFSET theAnswer
 	call	Combinations
 
+	;Get user's answer.
 	push	OFFSET	usrAnswer
 	call	GetData
 	call	CrLf
 
-	;Report answer
+	;Report answer.
 	push	nVal
 	push	rVal
 	push	theAnswer
